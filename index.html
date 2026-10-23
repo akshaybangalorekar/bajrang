@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0E1122">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bajrang">
+<meta name="description" content="Bajrang — a simple, motivating exercise buddy for young champions. Animated routines, timers and gentle sound cues.">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1122'/%3E%3Ccircle cx='32' cy='20' r='6.5' fill='%23F2A93B'/%3E%3Cpath d='M32 28v15M32 32l-11 7M32 32l11 7M32 43l-9 13M32 43l9 13' stroke='%23F2A93B' stroke-width='5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<title>Bajrang · Exercise Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Mukta:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1122; --ink:#F5F1E8; --muted:#A9A7BE;
+  --saffron:#F2A93B; --saffron2:#FFC061; --gold:#E7C878;
+  --card:rgba(255,255,255,.055); --stroke:rgba(255,255,255,.10);
+  --good:#7BD88F;
+  --ring: 326.73px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:
+    radial-gradient(120% 55% at 50% -8%, rgba(242,169,59,.18), transparent 62%),
+    radial-gradient(90% 55% at 108% 4%, rgba(122,84,220,.12), transparent 58%),
+    linear-gradient(180deg,#0E1122 0%,#0C1020 55%,#090B16 100%);
+  color:var(--ink);
+  font-family:'Mukta',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden; overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation; user-select:none;
+}
+.mandala{position:fixed;top:-38vmax;left:50%;transform:translateX(-50%);width:110vmax;height:110vmax;opacity:.06;pointer-events:none;z-index:0}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;z-index:1}
+.screen.on{display:flex}
+h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400;margin:0}
+
+/* ---------- HOME ---------- */
+#home{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.homewrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:clamp(18px,4vw,40px) clamp(16px,4vw,40px) 40px;width:100%}
+.hero{text-align:center;padding:clamp(14px,3vh,34px) 0 clamp(16px,3vh,30px)}
+.om{font-size:clamp(30px,7vw,44px);color:var(--saffron);line-height:1;opacity:.9;text-shadow:0 0 30px rgba(242,169,59,.45)}
+.hero h1{font-size:clamp(40px,10vw,76px);letter-spacing:.02em;margin:.08em 0 .05em;background:linear-gradient(180deg,#FFF6E4,#F2A93B 70%,#D98A20);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{margin:.2em 0 0;color:var(--muted);font-size:clamp(14px,3.4vw,18px);letter-spacing:.01em}
+.sub{margin:.35em 0 0;color:var(--gold);opacity:.75;font-size:clamp(12px,3vw,15px);letter-spacing:.14em}
+.routines{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:clamp(12px,2.4vw,18px);margin-top:clamp(6px,1.5vh,18px)}
+.routine{
+  text-align:left;cursor:pointer;color:inherit;font:inherit;
+  background:var(--card);border:1px solid var(--stroke);border-radius:22px;
+  padding:clamp(16px,2.4vw,22px);display:flex;flex-direction:column;gap:6px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:transform .18s ease,border-color .18s ease,background .18s ease;
+  opacity:0;transform:translateY(10px);animation:rise .5s ease forwards;
+}
+@keyframes rise{to{opacity:1;transform:none}}
+.routine:hover{border-color:rgba(242,169,59,.5);background:rgba(242,169,59,.07);transform:translateY(-3px)}
+.routine:active{transform:scale(.985)}
+.routine .ricon{width:30px;height:30px;color:var(--saffron);display:block}
+.routine .ricon svg{width:100%;height:100%;display:block}
+.iconbtn svg{width:22px;height:22px;display:block}
+.medal svg{width:clamp(58px,16vw,96px);height:clamp(58px,16vw,96px);color:var(--saffron);filter:drop-shadow(0 10px 30px rgba(242,169,59,.45))}
+.routine .rname{font-family:'Marcellus',serif;font-size:clamp(21px,4.6vw,25px);color:var(--ink)}
+.routine .rdesc{color:var(--muted);font-size:14.5px;line-height:1.4;min-height:2.6em}
+.routine .rmeta{color:var(--saffron);font-size:13px;letter-spacing:.04em;margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.routine .rmeta .dot{opacity:.4}
+.foot{text-align:center;color:var(--muted);opacity:.7;font-size:13px;padding:26px 0 6px}
+
+/* ---------- PLAYER ---------- */
+#player{padding:0}
+.ptop{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 6px;flex:0 0 auto}
+.ptop .rname{font-family:'Marcellus',serif;font-size:clamp(15px,3.8vw,19px);flex:1;text-align:center;color:var(--ink);opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{width:42px;height:42px;flex:0 0 auto;border-radius:14px;border:1px solid var(--stroke);background:var(--card);color:var(--ink);font-size:18px;display:grid;place-items:center;cursor:pointer;transition:background .15s}
+.iconbtn:hover{background:rgba(255,255,255,.1)}
+.pmain{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 14px calc(env(safe-area-inset-bottom,0px) + 10px)}
+.stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+.stage svg{height:100%;width:100%;max-height:100%;overflow:visible}
+#figLayer{filter:drop-shadow(0 6px 26px rgba(242,169,59,.22))}
+.info{text-align:center;flex:0 0 auto;padding:2px 0 2px}
+.exname{font-family:'Marcellus',serif;font-size:clamp(24px,6.6vw,38px);line-height:1.05}
+.exdev{color:var(--saffron);opacity:.85;font-size:clamp(13px,3.4vw,17px);margin-top:1px}
+.stepname{color:var(--muted);font-size:clamp(12px,3.2vw,15px);min-height:1.25em;margin-top:3px;transition:opacity .2s}
+.hud{display:flex;justify-content:center;flex:0 0 auto;margin-top:4px}
+.ringwrap{position:relative;width:clamp(118px,32vmin,190px);height:clamp(118px,32vmin,190px)}
+.ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringbg{fill:none;stroke:rgba(255,255,255,.09);stroke-width:9}
+.ringfg{fill:none;stroke:url(#grad);stroke-width:9;stroke-linecap:round;stroke-dasharray:var(--ring);stroke-dashoffset:var(--ring);transition:stroke-dashoffset .12s linear}
+.ringmid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.bignum{font-family:'Marcellus',serif;font-size:clamp(34px,10vmin,60px);line-height:1;font-variant-numeric:tabular-nums}
+.subnum{color:var(--muted);font-size:clamp(11px,2.9vmin,15px);margin-top:3px;letter-spacing:.03em}
+.progwrap{flex:0 0 auto;margin-top:8px}
+.progbar{height:7px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.progbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--saffron),var(--gold));transition:width .2s linear}
+.progtext{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12.5px;margin-top:6px;letter-spacing:.02em}
+.next{flex:0 0 auto;text-align:center;color:var(--muted);font-size:13px;margin-top:6px;min-height:1.2em}
+.next b{color:var(--gold);font-weight:600}
+.controls{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,20px);margin-top:auto;padding-top:12px}
+.btn{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--stroke);background:var(--card);color:var(--ink);transition:transform .12s,background .15s,border-color .15s}
+.btn:active{transform:scale(.96)}
+.btn.primary{
+  background:linear-gradient(180deg,var(--saffron2),var(--saffron));color:#241703;border:none;font-weight:700;
+  font-size:clamp(18px,4.6vw,22px);padding:clamp(14px,3.4vh,18px) clamp(34px,9vw,58px);
+  box-shadow:0 10px 30px rgba(242,169,59,.32), inset 0 1px 0 rgba(255,255,255,.4);
+  letter-spacing:.02em;min-width:clamp(150px,42vw,220px);
+}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.ghost{padding:clamp(11px,2.6vh,14px) clamp(18px,5vw,26px);font-size:clamp(14px,3.6vw,16px);color:var(--muted)}
+.btn.ghost:hover{background:rgba(255,255,255,.1);color:var(--ink)}
+.btn.big{font-size:20px;padding:18px 44px;min-width:0;margin-top:8px}
+
+/* ---------- DONE ---------- */
+#done{align-items:center;justify-content:center;text-align:center;padding:30px}
+.medal{font-size:clamp(58px,16vw,96px);animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+#done h2{font-size:clamp(40px,11vw,72px);margin-top:6px;background:linear-gradient(180deg,#FFF6E4,#F2A93B 70%,#D98A20);-webkit-background-clip:text;background-clip:text;color:transparent}
+.dsub{color:var(--muted);margin:.2em 0 1.2em;font-size:clamp(14px,3.6vw,17px);letter-spacing:.05em}
+.stats{display:flex;gap:clamp(14px,5vw,40px);justify-content:center;margin-bottom:26px;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--stroke);border-radius:18px;padding:14px clamp(18px,5vw,30px);min-width:110px}
+.stat .v{font-family:'Marcellus',serif;font-size:clamp(26px,7vw,36px);color:var(--gold)}
+.stat .k{color:var(--muted);font-size:12.5px;letter-spacing:.06em;margin-top:2px}
+
+/* ---------- WIDE ---------- */
+@media (min-width:920px) and (min-height:560px){
+  .pmain{flex-direction:row;gap:clamp(20px,3vw,48px);padding:0 clamp(20px,3vw,48px) 22px;align-items:stretch}
+  .stage{flex:1.05;height:auto}
+  .panel{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;max-width:520px}
+  .info{text-align:left;padding-left:4px}
+  .hud{justify-content:flex-start;margin-top:12px}
+  .ringwrap{width:clamp(150px,20vmin,210px);height:clamp(150px,20vmin,210px)}
+  .progwrap{margin-top:16px}
+  .controls{justify-content:flex-start;margin-top:22px;padding-top:0}
+}
+@media (max-height:640px){
+  .exname{font-size:clamp(20px,5.4vw,26px)}
+  .ringwrap{width:clamp(96px,24vmin,130px);height:clamp(96px,24vmin,130px)}
+  .bignum{font-size:clamp(28px,8vmin,44px)}
+  .stepname{display:none}
+  .controls{padding-top:6px}
+  .btn.primary{padding:12px 34px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.05s!important}}
+
+</style>
+</head>
+<body>
+
+<div class="mandala" aria-hidden="true">
+<svg viewBox="0 0 100 100" fill="none" stroke="#F2A93B" stroke-width="0.28">
+<circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="40"/><circle cx="50" cy="50" r="31"/><circle cx="50" cy="50" r="22"/><circle cx="50" cy="50" r="12"/>
+<ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(0 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(15 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(30 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(45 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(60 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(75 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(90 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(105 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(120 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(135 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(150 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(165 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(180 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(195 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(210 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(225 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(240 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(255 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(270 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(285 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(300 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(315 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(330 50 50)"/><ellipse cx="50" cy="24" rx="2.4" ry="9" transform="rotate(345 50 50)"/>
+</svg>
+</div>
+
+<!-- ============ HOME ============ -->
+<section class="screen on" id="home">
+  <div class="homewrap">
+    <header class="hero">
+      <div class="om">ॐ</div>
+      <h1>Bajrang</h1>
+      <p class="tag">Your exercise buddy — strong, simple, and fun.</p>
+      <p class="sub">बजरंग · बल · अनुशासन</p>
+    </header>
+    <div class="routines" id="routines"></div>
+    <footer class="foot">Pick a routine and press Start. Stay strong, little Bajrang!</footer>
+  </div>
+</section>
+
+<!-- ============ PLAYER ============ -->
+<section class="screen" id="player">
+  <div class="ptop">
+    <button class="iconbtn" id="back" aria-label="Back">←</button>
+    <span class="rname" id="routineName">Routine</span>
+    <button class="iconbtn" id="mute" aria-label="Sound"></button>
+  </div>
+  <div class="pmain">
+    <div class="stage">
+      <svg id="fig" viewBox="0 0 400 460" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g id="bgLayer"></g>
+        <g id="figLayer"></g>
+      </svg>
+    </div>
+    <div class="panel">
+      <div class="info">
+        <div class="exname" id="exName">Exercise</div>
+        <div class="exdev" id="exDev"></div>
+        <div class="stepname" id="stepName"></div>
+      </div>
+      <div class="hud">
+        <div class="ringwrap">
+          <svg viewBox="0 0 120 120">
+            <defs>
+              <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FFC061"/><stop offset="1" stop-color="#F2A93B"/>
+              </linearGradient>
+            </defs>
+            <circle class="ringbg" cx="60" cy="60" r="52"/>
+            <circle class="ringfg" id="ringfg" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="ringmid">
+            <div class="bignum" id="bigNum">0</div>
+            <div class="subnum" id="subNum">of 0</div>
+          </div>
+        </div>
+      </div>
+      <div class="progwrap">
+        <div class="progbar"><i id="progbar"></i></div>
+        <div class="progtext"><span id="progL">Exercise 1</span><span id="progR"></span></div>
+      </div>
+      <div class="next" id="nextUp"></div>
+      <div class="controls">
+        <button class="btn ghost" id="stop">Stop</button>
+        <button class="btn primary" id="startPause">Start</button>
+        <button class="btn ghost" id="skipBtn">Skip</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DONE ============ -->
+<section class="screen" id="done">
+  <div class="medal" id="medalIcon"></div>
+  <h2>Shabash!</h2>
+  <p class="dsub">Routine complete — you are getting stronger.</p>
+  <div class="stats" id="stats"></div>
+  <button class="btn primary big" id="again">Do another routine</button>
+</section>
+
+<script>
+// Bajrang — figure engine + exercise animations (shared by app and dev tools)
+const R = Math.PI / 180;
+const dir = a => [Math.sin(a * R), Math.cos(a * R)];
+
+const L_TORSO = 120, L_UA = 62, L_FA = 58, L_TH = 78, L_SH = 72;
+
+function ik(root, target, l1, l2, sign) {
+  let dx = target[0] - root[0], dy = target[1] - root[1];
+  let d = Math.hypot(dx, dy);
+  d = Math.min(l1 + l2 - 0.01, Math.max(Math.abs(l1 - l2) + 0.01, d));
+  const base = Math.atan2(dx, dy) / R;
+  const cosA = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+  const A = Math.acos(Math.max(-1, Math.min(1, cosA))) / R;
+  const ang = (base + sign * A) * R;
+  const mid = [root[0] + Math.sin(ang) * l1, root[1] + Math.cos(ang) * l1];
+  return [root, mid, [target[0], target[1]]];
+}
+
+function buildPose(p) {
+  const lat = p.lateral === undefined ? 11 : p.lateral;
+  const torso = p.torso;
+  const td = dir(torso);
+  const shoulder = p.shoulder || [p.hip[0] + td[0] * L_TORSO, p.hip[1] + td[1] * L_TORSO];
+  p = Object.assign({}, p, { shoulder });
+  const perp = [td[1], -td[0]];
+  const sl = [p.shoulder[0] + perp[0] * lat, p.shoulder[1] + perp[1] * lat];
+  const sr = [p.shoulder[0] - perp[0] * lat, p.shoulder[1] - perp[1] * lat];
+  const hl = [p.hip[0] + perp[0] * lat, p.hip[1] + perp[1] * lat];
+  const hr = [p.hip[0] - perp[0] * lat, p.hip[1] - perp[1] * lat];
+  const armL = ik(sl, p.handL, L_UA, L_FA, p.eL === undefined ? 1 : p.eL);
+  const armR = ik(sr, p.handR, L_UA, L_FA, p.eR === undefined ? -1 : p.eR);
+  const legL = ik(hl, p.footL, L_TH, L_SH, p.kL === undefined ? -1 : p.kL);
+  const legR = ik(hr, p.footR, L_TH, L_SH, p.kR === undefined ? 1 : p.kR);
+  const hd = dir(torso + (p.headOff || 0));
+  const headC = [p.shoulder[0] + hd[0] * 36, p.shoulder[1] + hd[1] * 36];
+  return { hip: p.hip, shoulder: p.shoulder, armL, armR, legL, legR, headC, headR: 20, lat, perp, sl, sr, hl, hr };
+}
+
+function L(a, b, w, col, op) {
+  return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="${op === undefined ? 1 : op}"/>`;
+}
+
+function poseSVG(p, opt) {
+  opt = opt || {};
+  const g = buildPose(p);
+  const main = opt.main || '#F3E9D6';
+  const dim = opt.dim || 'rgba(243,233,214,0.42)';
+  const accent = opt.accent || '#F2A93B';
+  let s = '';
+  if (opt.ground) s += `<ellipse cx="${p.hip[0].toFixed(0)}" cy="${(opt.groundY || 402)}" rx="95" ry="11" fill="rgba(0,0,0,0.30)"/>`;
+  s += L(g.legR[0], g.legR[1], 12, dim) + L(g.legR[1], g.legR[2], 12, dim);
+  s += L(g.armR[0], g.armR[1], 11, dim) + L(g.armR[1], g.armR[2], 11, dim);
+  s += L(g.hip, g.shoulder, 17, main);
+  s += L(g.legL[0], g.legL[1], 12, main) + L(g.legL[1], g.legL[2], 12, main);
+  s += L(g.armL[0], g.armL[1], 11, main) + L(g.armL[1], g.armL[2], 11, main);
+  s += L(g.shoulder, g.headC, 11, main);
+  s += `<circle cx="${g.headC[0].toFixed(1)}" cy="${g.headC[1].toFixed(1)}" r="20" fill="${main}"/>`;
+  const joints = [[g.armL[1], 5], [g.armR[1], 4.5], [g.legL[1], 5], [g.legR[1], 4.5], [g.shoulder, 6.5], [g.hip, 6.5]];
+  joints.forEach((j, i) => { s += `<circle cx="${j[0][0].toFixed(1)}" cy="${j[0][1].toFixed(1)}" r="${j[1]}" fill="${accent}" opacity="${i < 4 ? 0.85 : 1}"/>`; });
+  return s;
+}
+
+const lerp = (a, b, u) => a + (b - a) * u;
+const lerpPt = (a, b, u) => [lerp(a[0], b[0], u), lerp(a[1], b[1], u)];
+const angLerp = (a, b, u) => { const d = ((b - a + 540) % 360) - 180; return a + d * u; };
+function lerpPose(A, B, u) {
+  const o = {};
+  ['hip', 'handL', 'handR', 'footL', 'footR'].forEach(k => o[k] = lerpPt(A[k], B[k], u));
+  o.torso = angLerp(A.torso, B.torso, u);
+  o.headOff = lerp(A.headOff || 0, B.headOff || 0, u);
+  o.lateral = lerp(A.lateral, B.lateral, u);
+  ['eL', 'eR', 'kL', 'kR'].forEach(k => { if (A[k] !== undefined) o[k] = A[k]; });
+  return o;
+}
+function seqAnim(poses) {
+  const n = poses.length;
+  return t => { let x = ((t % 1) + 1) % 1 * n; const i = Math.floor(x) % n; return lerpPose(poses[i], poses[(i + 1) % n], x - Math.floor(x)); };
+}
+function keysAnim(keys) { // keys: [[t,pose],...]
+  return t => {
+    t = ((t % 1) + 1) % 1;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (t >= keys[i][0] && t <= keys[i + 1][0]) {
+        const u = (t - keys[i][0]) / (keys[i + 1][0] - keys[i][0] || 1);
+        const s = u * u * (3 - 2 * u);
+        return lerpPose(keys[i][1], keys[i + 1][1], s);
+      }
+    }
+    return keys[keys.length - 1][1];
+  };
+}
+
+const STAND = { hip: [200, 250], torso: 180, handL: [188, 252], handR: [212, 252], footL: [190, 400], footR: [210, 400], headOff: 0, lateral: 11, eL: 1, eR: -1, kL: -1, kR: 1 };
+function P(o) { return Object.assign({}, STAND, o); }
+
+// ---------- exercise animations ----------
+function skip(t) {
+  const s = Math.sin(Math.PI * t);
+  return P({
+    hip: [200, 250 - 16 * s],
+    handL: [174 + 9 * Math.cos(2 * Math.PI * t), 244 + 9 * Math.sin(2 * Math.PI * t)],
+    handR: [226 - 9 * Math.cos(2 * Math.PI * t), 244 + 9 * Math.sin(2 * Math.PI * t)],
+    footL: [190, 400 - 19 * s], footR: [210, 400 - 19 * s], kL: 1, kR: -1
+  });
+}
+function jog(t) {
+  const p = 2 * Math.PI * t, l = Math.max(0, Math.sin(p)), r = Math.max(0, -Math.sin(p));
+  return P({
+    hip: [200, 250 - 8 * Math.abs(Math.sin(p))],
+    footL: [190 - 8 * l, 400 - 72 * l], footR: [210 + 8 * r, 400 - 72 * r],
+    handL: [176, 238 + 30 * l], handR: [224, 238 + 30 * r], kL: 1, kR: -1
+  });
+}
+function pushup(t) {
+  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
+  return P({ hip: [190, 300 + 44 * u], torso: 133, handL: [300, 400], handR: [300, 400], footL: [88, 400], footR: [88, 400], headOff: 12, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 });
+}
+const DAND = keysAnim([
+  [0, P({ hip: [200, 250], torso: 42, handL: [300, 398], handR: [300, 398], footL: [152, 400], footR: [152, 400], headOff: 12, lateral: 4, kL: -1, kR: -1 })],
+  [0.38, P({ hip: [196, 300], torso: 96, handL: [302, 398], handR: [302, 398], footL: [96, 400], footR: [96, 400], headOff: 16, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 })],
+  [0.66, P({ hip: [180, 372], torso: 122, handL: [302, 398], handR: [302, 398], footL: [80, 400], footR: [80, 400], headOff: -16, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 })],
+  [1, P({ hip: [200, 250], torso: 42, handL: [300, 398], handR: [300, 398], footL: [140, 400], footR: [140, 400], headOff: 12, lateral: 4, kL: -1, kR: -1 })]
+]);
+const BURPEE = keysAnim([
+  [0, P({})],
+  [0.26, P({ hip: [200, 318], torso: 176, handL: [198, 396], handR: [222, 396], footL: [186, 400], footR: [214, 400], lateral: 10 })],
+  [0.5, P({ hip: [190, 300], torso: 133, handL: [300, 400], handR: [300, 400], footL: [88, 400], footR: [88, 400], headOff: 12, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 })],
+  [0.78, P({ hip: [200, 238], torso: 186, handL: [186, 18], handR: [214, 18], footL: [190, 400], footR: [210, 400], headOff: -6 })],
+  [1, P({})]
+]);
+function pullup(t) {
+  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
+  const hy = 285 - 80 * u;
+  return P({ hip: [200, hy], torso: 180, handL: [188, 45], handR: [212, 45], footL: [190, hy + 150], footR: [210, hy + 150], lateral: 12, eL: -1, eR: 1 });
+}
+function hang(t) {
+  const sw = 7 * Math.sin(2 * Math.PI * t * 0.5);
+  return P({ hip: [200 + sw, 285], torso: 180 + sw, handL: [188, 45], handR: [212, 45], footL: [200 + sw * 1.5, 435], footR: [200 + sw * 1.5, 435], lateral: 12 });
+}
+function kneeup(t) {
+  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
+  return P({ hip: [200, 285], torso: 180, handL: [188, 45], handR: [212, 45], footL: [200 + 70 * u, 435 - 100 * u], footR: [200 + 74 * u, 435 - 96 * u], lateral: 7, kL: 1, kR: 1 });
+}
+function swing(t) {
+  const s = Math.sin(2 * Math.PI * t);
+  return P({ hip: [200 + 44 * s, 285], torso: 180 + 20 * s, handL: [188, 45], handR: [212, 45], footL: [200 + 74 * s, 430], footR: [200 + 74 * s, 430], lateral: 6 });
+}
+
+// ---------- Surya Namaskar (12 steps) ----------
+const SURYA = [
+  P({ hip: [200, 250], torso: 180, handL: [207, 196], handR: [206, 205], lateral: 8 }),
+  P({ hip: [200, 250], torso: 188, handL: [192, 14], handR: [208, 14], headOff: -8, lateral: 8 }),
+  P({ hip: [200, 250], torso: 45, handL: [198, 395], handR: [220, 395], lateral: 8 }),
+  P({ hip: [200, 300], torso: 55, handL: [268, 395], handR: [288, 395], footL: [255, 400], footR: [110, 400], kL: -1, kR: 1, lateral: 6 }),
+  P({ hip: [190, 300], torso: 133, handL: [300, 400], handR: [300, 400], footL: [88, 400], footR: [88, 400], headOff: 12, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 }),
+  P({ hip: [205, 345], torso: 118, handL: [298, 400], handR: [298, 400], footL: [120, 400], footR: [120, 400], headOff: 22, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 }),
+  P({ hip: [180, 375], torso: 122, handL: [300, 398], handR: [300, 398], footL: [80, 400], footR: [80, 400], headOff: -16, lateral: 4, eL: -1, eR: -1, kL: -1, kR: -1 }),
+  P({ hip: [200, 240], torso: 40, handL: [305, 398], handR: [305, 398], footL: [130, 400], footR: [130, 400], headOff: 15, lateral: 4, kL: -1, kR: -1 }),
+  P({ hip: [200, 300], torso: 55, handL: [268, 395], handR: [288, 395], footL: [110, 400], footR: [255, 400], kL: 1, kR: -1, lateral: 6 }),
+  P({ hip: [200, 250], torso: 45, handL: [198, 395], handR: [220, 395], lateral: 8 }),
+  P({ hip: [200, 250], torso: 188, handL: [192, 14], handR: [208, 14], headOff: -8, lateral: 8 }),
+  P({ hip: [200, 250], torso: 180, handL: [207, 196], handR: [206, 205], lateral: 8 })
+];
+
+// ---------- Hip yoga flow ----------
+const HIP = [
+  P({ hip: [200, 372], torso: 180, footL: [244, 392], footR: [156, 392], handL: [240, 386], handR: [160, 386], kL: 1, kR: -1, lateral: 9 }),   // Butterfly
+  P({ hip: [200, 322], torso: 178, footL: [172, 400], footR: [228, 400], handL: [198, 282], handR: [202, 286], lateral: 13, kL: -1, kR: 1 }),  // Deep squat
+  P({ hip: [200, 318], torso: 180, footL: [148, 400], footR: [252, 400], handL: [132, 188], handR: [268, 188], lateral: 15, kL: -1, kR: 1 }),  // Goddess
+  P({ hip: [200, 318], torso: 168, footL: [244, 400], footR: [150, 400], handL: [214, 176], handR: [228, 186], lateral: 8, kL: -1, kR: 1 }),  // Low lunge
+  P({ hip: [200, 364], torso: 156, footL: [250, 392], footR: [116, 398], handL: [274, 392], handR: [288, 394], lateral: 6, kL: 1, kR: -1 }),  // Pigeon
+  P({ hip: [200, 374], torso: 128, footL: [112, 398], footR: [288, 398], handL: [252, 398], handR: [268, 398], lateral: 6, kL: -1, kR: -1 })  // Seated wide fold
+];
+
+const EXERCISES = {
+  skip: { label: 'Skipping', anim: skip, ground: true },
+  jog: { label: 'Spot Jogging', anim: jog, ground: true },
+  surya: { label: 'Surya Namaskar', anim: seqAnim(SURYA), ground: true },
+  pushup: { label: 'Push-ups', anim: pushup, ground: true },
+  dand: { label: 'Hanuman Dand', anim: DAND, ground: true },
+  burpee: { label: 'Burpees', anim: BURPEE, ground: true },
+  pullup: { label: 'Pull-ups', anim: pullup, bar: true },
+  hang: { label: 'Dead Hang', anim: hang, bar: true },
+  kneeup: { label: 'Knees to Chest', anim: kneeup, bar: true },
+  swing: { label: 'Jerky Swings', anim: swing, bar: true },
+  hipyoga: { label: 'Hip Yoga Flow', anim: seqAnim(HIP), ground: true }
+};
+
+
+/* ================= Bajrang — app logic ================= */
+const SURYA_STEPS = ['Pranamasana · Prayer', 'Hasta Uttanasana · Raised Arms', 'Hasta Padasana · Forward Fold',
+  'Ashwa Sanchalanasana · Low Lunge', 'Kumbhakasana · Plank', 'Ashtanga Namaskara · Eight Limbs',
+  'Bhujangasana · Cobra', 'Adho Mukha Svanasana · Downward Dog', 'Ashwa Sanchalanasana · Low Lunge',
+  'Hasta Padasana · Forward Fold', 'Hasta Uttanasana · Raised Arms', 'Pranamasana · Prayer'];
+const HIP_STEPS = ['Baddha Konasana · Butterfly', 'Malasana · Deep Squat', 'Utkata Konasana · Goddess',
+  'Anjaneyasana · Low Lunge', 'Kapotasana · Pigeon', 'Upavistha Konasana · Wide Fold'];
+
+const CAT = {
+  skip:    { name: 'Skipping',        dev: 'रस्सी कूद',      kind: 'reps',  total: 300, rep: 0.5, tip: ['Stay light on your toes', 'Turn the rope with your wrists', 'Keep a steady rhythm', 'Breathe easy'] },
+  jog:     { name: 'Spot Jogging',    dev: 'जॉगिंग',          kind: 'reps',  total: 300, rep: 0.5, tip: ['Pump your arms', 'Land softly on your toes', 'Keep your back tall', 'Smile — you are warming up'] },
+  surya:   { name: 'Surya Namaskar',  dev: 'सूर्य नमस्कार',   kind: 'steps', rounds: 10, stepTime: 2.0, steps: SURYA_STEPS, tip: ['Move with your breath', 'Salute the sun', 'Flow smoothly'] },
+  pushup:  { name: 'Push-ups',        dev: 'पुश-अप',          kind: 'reps',  total: 10,  rep: 2.6, tip: ['Body in one straight line', 'Elbows close to your sides', 'Lower till the chest is near the floor', 'Push the floor away'] },
+  dand:    { name: 'Hanuman Dand',    dev: 'हनुमान दंड',      kind: 'reps',  total: 10,  rep: 3.2, tip: ['Sweep low like Hanuman', 'Chest forward, then rise', 'Move smoothly', 'Power comes from the core'] },
+  burpee:  { name: 'Burpees',         dev: 'बर्पी',           kind: 'reps',  total: 10,  rep: 3.6, tip: ['Jump back, jump in', 'Explode up tall', 'Land soft', 'One smooth flow'] },
+  pullup:  { name: 'Pull-ups',        dev: 'पुल-अप',          kind: 'reps',  total: 10,  rep: 3.2, tip: ['Pull with your back', 'Chin over the bar', 'Lower slowly', 'Full stretch at the bottom'] },
+  hang:    { name: 'Dead Hang',       dev: 'डेड हैंग',        kind: 'time',  total: 120, tip: ['Relax your shoulders', 'Grip firm, keep breathing', 'Let the arms stretch long', 'Stay calm and steady'] },
+  kneeup:  { name: 'Knees to Chest',  dev: 'घुटने से छाती',   kind: 'reps',  total: 10,  rep: 3.0, tip: ['Lift knees to your chest', 'Slow and controlled', 'Lower slowly', 'Keep the body still'] },
+  swing:   { name: 'Jerky Swings',    dev: 'झूला',            kind: 'reps',  total: 10,  rep: 2.4, tip: ['Small, controlled swings', 'Engage your core', 'Do not swing wildly', 'Steady rhythm'] },
+  hipyoga: { name: 'Hip Yoga Flow',   dev: 'कूल्हा योग',      kind: 'steps', rounds: 1, stepTime: 25, steps: HIP_STEPS, tip: ['Breathe into the hips', 'Go only as far as is comfortable', 'Relax and hold', 'Let gravity help'] }
+};
+
+const svg = (p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+const ICON = {
+  soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9.2a3.9 3.9 0 0 1 0 5.6"/><path d="M18.1 6.5a7.3 7.3 0 0 1 0 11"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+  full: svg('<path d="M12 3.2c3.6 3.4 5.5 6.2 5.5 9.1a5.5 5.5 0 0 1-11 0c0-1.6.6-2.9 1.7-4 .2 1.7 1 2.7 2 2.9-.4-2.7.2-5 1.8-8z"/>'),
+  quick: svg('<path d="M13.5 2.5 5 13.5h5.2L9.5 21.5 19 10h-5.4z"/>'),
+  upper: svg('<path d="M7 8.5v7M17 8.5v7M3.5 10.5v3M20.5 10.5v3M7 12h10"/>'),
+  surya: svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/>'),
+  hips: svg('<path d="M12 3.8c2.5 3.1 2.5 6.4 0 9.2-2.5-2.8-2.5-6.1 0-9.2z"/><path d="M3.4 12.6c1.9-2.5 4.8-3.1 7.2-1.7M20.6 12.6c-1.9-2.5-4.8-3.1-7.2-1.7"/><path d="M3.9 13c1 4.1 4.3 6.7 8.1 6.7s7.1-2.6 8.1-6.7"/>'),
+  medal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2.5 11 8.4M15.5 2.5 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="M12 12l.95 1.9 2.1.3-1.52 1.48.36 2.09L12 16.79l-1.89.98.36-2.09L8.95 14.2l2.1-.3z" fill="currentColor" stroke="none"/></svg>'
+};
+const ROUTINES = [
+  { id: 'full',  name: 'Hanuman Full',   dev: 'पूर्ण अभ्यास', icon: 'full', desc: 'The complete Bajrang set — everything, in order.', steps: ['skip', 'jog', 'surya', 'pushup', 'dand', 'burpee', 'pullup', 'hang', 'kneeup', 'swing', 'hipyoga'] },
+  { id: 'quick', name: 'Quick Power',    dev: 'तेज़ अभ्यास',   icon: 'quick', desc: 'A short burst — perfect before school.', steps: [['jog', { total: 150 }], ['skip', { total: 150 }], ['surya', { rounds: 5 }], 'pushup', 'burpee'] },
+  { id: 'upper', name: 'Veer Upper Body', dev: 'वीर अभ्यास',   icon: 'upper', desc: 'Arms, shoulders and a strong grip.', steps: ['pushup', 'dand', 'pullup', 'hang', 'kneeup', 'swing'] },
+  { id: 'surya', name: 'Surya & Cardio', dev: 'सूर्य अभ्यास',  icon: 'surya', desc: 'Warm-up, Surya Namaskar, then a cardio finish.', steps: ['jog', 'skip', 'surya', 'burpee', 'hipyoga'] },
+  { id: 'hips',  name: 'Hips & Calm',    dev: 'शांति अभ्यास',  icon: 'hips', desc: 'Open the hips, breathe, and unwind.', steps: [['jog', { total: 80 }], 'hipyoga', ['hang', { total: 60 }]] }
+];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const RING = 326.73;
+const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const parseStep = s => Array.isArray(s) ? { id: s[0], ov: s[1] || {} } : { id: s, ov: {} };
+
+/* ---------- audio ---------- */
+let audio = null, muted = localStorage.getItem('bajrang_mute') === '1';
+function initAudio() {
+  if (audio) { if (audio.state === 'suspended') audio.resume(); return; }
+  try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; }
+}
+function beep(freq, dur, gain, type) {
+  if (muted || !audio) return;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  const t = audio.currentTime;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(gain, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(audio.destination);
+  o.start(t); o.stop(t + dur + 0.03);
+}
+const cue = {
+  tick: () => beep(880, 0.06, 0.028),
+  tick10: () => beep(1180, 0.09, 0.045),
+  step: () => beep(659, 0.10, 0.045),
+  prep: () => beep(523, 0.12, 0.05),
+  go: () => { beep(784, 0.12, 0.06); setTimeout(() => beep(1046, 0.16, 0.06), 110); },
+  done: () => { beep(659, 0.14, 0.06); setTimeout(() => beep(988, 0.22, 0.06), 120); },
+  finish: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.3, 0.06), i * 140)); }
+};
+
+/* ---------- state ---------- */
+let steps = [], idx = 0, phase = 'idle', prevPhase = 'run', prepLeft = 3, elapsed = 0, last = 0, lastPrepInt = 99, lastCue = -1;
+let offsets = [], totalDur = 1, routineStart = 0, routineElapsed = 0;
+
+function buildRoutine(rt) {
+  return rt.steps.map(s => {
+    const { id, ov } = parseStep(s), c = CAT[id], st = { id, cat: c, ov, prep: 3 };
+    if (c.kind === 'reps') { st.total = ov.total != null ? ov.total : c.total; st.rep = ov.rep != null ? ov.rep : c.rep; }
+    else if (c.kind === 'time') { st.total = ov.total != null ? ov.total : c.total; }
+    else { st.stepsArr = c.steps; st.rounds = ov.rounds != null ? ov.rounds : (c.rounds || 1); st.hold = ov.hold != null ? ov.hold : c.stepTime; st.n = st.stepsArr.length; st.totalSteps = st.rounds * st.n; }
+    return st;
+  });
+}
+const durOf = st => st.cat.kind === 'reps' ? st.total * st.rep : st.cat.kind === 'time' ? st.total : st.totalSteps * st.hold;
+
+/* ---------- DOM ---------- */
+const figLayer = $('#figLayer'), bgLayer = $('#bgLayer');
+const exNameEl = $('#exName'), exDevEl = $('#exDev'), stepNameEl = $('#stepName');
+const bigEl = $('#bigNum'), subEl = $('#subNum'), ringfg = $('#ringfg');
+const progbar = $('#progbar'), progL = $('#progL'), progR = $('#progR'), nextEl = $('#nextUp');
+const startBtn = $('#startPause'), playerName = $('#routineName'), statsEl = $('#stats');
+
+function setBG(st) {
+  if (st.cat.bar || st.id === 'pullup' || st.id === 'hang' || st.id === 'kneeup' || st.id === 'swing') {
+    bgLayer.innerHTML = '<line x1="70" y1="46" x2="330" y2="46" stroke="#5b6488" stroke-width="11" stroke-linecap="round"/><line x1="96" y1="46" x2="96" y2="4" stroke="#5b6488" stroke-width="9"/><line x1="304" y1="46" x2="304" y2="4" stroke="#5b6488" stroke-width="9"/>';
+  } else {
+    bgLayer.innerHTML = '<ellipse cx="200" cy="404" rx="130" ry="14" fill="rgba(242,169,59,.08)"/><line x1="30" y1="406" x2="370" y2="406" stroke="rgba(255,255,255,.13)" stroke-width="3" stroke-linecap="round"/>';
+  }
+}
+
+function animT(st) {
+  if (phase === 'prep' || phase === 'idle') return 0;
+  if (st.cat.kind === 'reps') return (elapsed % st.rep) / st.rep;
+  if (st.cat.kind === 'time') return (elapsed % 2) / 2;
+  return elapsed / (st.n * st.hold);
+}
+
+function render() {
+  const st = steps[idx];
+  figLayer.innerHTML = poseSVG(EXERCISES[st.id].anim(animT(st)), {});
+  exNameEl.textContent = st.cat.name;
+  exDevEl.textContent = st.cat.dev || '';
+  let big = '', sub = '', frac = 0, line = '', rline = '';
+  if (phase === 'prep' || phase === 'idle') {
+    if (phase === 'idle') {
+      if (st.cat.kind === 'reps') { big = String(st.total); sub = 'reps'; }
+      else if (st.cat.kind === 'time') { big = fmt(st.total); sub = 'to hold'; }
+      else if (st.rounds > 1) { big = String(st.rounds); sub = 'rounds'; }
+      else { big = String(st.n); sub = 'poses'; }
+    } else { big = String(Math.max(1, Math.ceil(prepLeft))); sub = 'get ready'; }
+    frac = phase === 'idle' ? 0 : 1 - Math.max(0, prepLeft) / st.prep;
+    line = phase === 'idle' ? (st.cat.tip ? st.cat.tip[0] : '') : 'Get ready…';
+  } else {
+    const d = durOf(st); frac = Math.min(1, elapsed / d);
+    if (st.cat.kind === 'reps') { big = String(Math.min(st.total, Math.floor(elapsed / st.rep) + 1)); sub = 'of ' + st.total; }
+    else if (st.cat.kind === 'time') { big = fmt(st.total - elapsed); sub = 'remaining'; }
+    else { const si = Math.floor(elapsed / st.hold) % st.n; big = String(si + 1); sub = st.stepsArr[si].split(' · ')[0]; }
+    if (st.cat.kind === 'steps') {
+      const si = Math.floor(elapsed / st.hold) % st.n;
+      const round = Math.floor(elapsed / (st.hold * st.n)) + 1;
+      line = 'Step ' + (si + 1) + ' of ' + st.n;
+      rline = st.rounds > 1 ? 'Round ' + Math.min(round, st.rounds) + ' of ' + st.rounds : '';
+    } else {
+      const tips = st.cat.tip || [];
+      line = tips.length ? tips[Math.floor(elapsed / 7) % tips.length] : '';
+    }
+  }
+  bigEl.textContent = big; subEl.textContent = sub; stepNameEl.textContent = line;
+  ringfg.style.strokeDashoffset = String(RING * (1 - frac));
+  const done = offsets[idx] + (phase === 'prep' ? (st.prep - Math.max(0, prepLeft)) : (phase === 'idle' ? 0 : st.prep + Math.min(elapsed, durOf(st))));
+  progbar.style.width = Math.min(100, (done / totalDur) * 100) + '%';
+  progL.textContent = 'Exercise ' + (idx + 1) + ' of ' + steps.length;
+  progR.textContent = rline || (phase === 'idle' ? 'ready' : Math.round(frac * 100) + '%');
+  const nx = steps[idx + 1];
+  nextEl.innerHTML = nx ? 'Next: <b>' + nx.cat.name + '</b>' : 'Last one — finish strong!';
+  startBtn.textContent = phase === 'idle' ? 'Start' : phase === 'paused' ? 'Resume' : 'Pause';
+}
+
+/* ---------- flow ---------- */
+function openRoutine(rt) {
+  steps = buildRoutine(rt); idx = 0; phase = 'idle'; prepLeft = steps[0].prep; elapsed = 0;
+  offsets = []; totalDur = 0;
+  steps.forEach(st => { offsets.push(totalDur); totalDur += st.prep + durOf(st); });
+  routineElapsed = 0;
+  playerName.textContent = rt.name;
+  setBG(steps[0]); render();
+  $('#home').classList.remove('on'); $('#done').classList.remove('on'); $('#player').classList.add('on');
+}
+function beginStep(i) {
+  idx = i; phase = 'prep'; prepLeft = steps[i].prep; elapsed = 0; lastPrepInt = 99; lastCue = -1;
+  setBG(steps[i]); render();
+}
+function doneStep() {
+  cue.done();
+  if (idx + 1 < steps.length) beginStep(idx + 1); else finish();
+}
+function finish() {
+  phase = 'done'; cue.finish();
+  const mins = Math.floor(routineElapsed / 60), secs = Math.round(routineElapsed % 60);
+  statsEl.innerHTML = '<div class="stat"><div class="v">' + steps.length + '</div><div class="k">EXERCISES</div></div>' +
+    '<div class="stat"><div class="v">' + (mins ? mins + 'm ' : '') + secs + 's</div><div class="k">TIME</div></div>' +
+    '<div class="stat"><div class="v">' + (muted ? 'OFF' : 'ON') + '</div><div class="k">SOUND</div></div>';
+  $('#player').classList.remove('on'); $('#done').classList.add('on');
+}
+function goHome() { phase = 'idle'; $('#player').classList.remove('on'); $('#done').classList.remove('on'); $('#home').classList.add('on'); }
+
+/* ---------- loop ---------- */
+function tick(now) {
+  requestAnimationFrame(tick);
+  const dt = Math.min(0.06, (now - last) / 1000); last = now;
+  if (phase === 'prep') {
+    prepLeft -= dt; routineElapsed += dt;
+    const ci = Math.ceil(prepLeft);
+    if (ci !== lastPrepInt && ci > 0) { lastPrepInt = ci; cue.prep(); }
+    if (prepLeft <= 0) { phase = 'run'; elapsed = 0; last = now; cue.go(); }
+    render();
+  } else if (phase === 'run') {
+    elapsed += dt; routineElapsed += dt;
+    const st = steps[idx], d = durOf(st);
+    if (st.cat.kind === 'reps') {
+      const cur = Math.min(st.total, Math.floor(elapsed / st.rep) + 1);
+      if (cur !== lastCue) { lastCue = cur; cur % 10 === 0 ? cue.tick10() : cue.tick(); }
+    } else if (st.cat.kind === 'steps') {
+      const si = Math.floor(elapsed / st.hold);
+      if (si !== lastCue) { lastCue = si; cue.step(); }
+    } else {
+      const s = Math.floor(elapsed);
+      if (s !== lastCue && s % 10 === 0 && s > 0) { lastCue = s; cue.step(); }
+    }
+    if (elapsed >= d) { doneStep(); return; }
+    render();
+  }
+}
+
+/* ---------- wiring ---------- */
+$('#routines').innerHTML = ROUTINES.map((rt, i) => {
+  const built = buildRoutine(rt);
+  const secs = built.reduce((a, st) => a + st.prep + durOf(st), 0);
+  const mins = Math.max(1, Math.round(secs / 60));
+  return '<button class="routine" data-i="' + i + '" style="animation-delay:' + (i * 70) + 'ms">' +
+    '<span class="ricon">' + ICON[rt.icon] + '</span>' +
+    '<span class="rname">' + rt.name + '</span>' +
+    '<span class="rdesc">' + rt.desc + '</span>' +
+    '<span class="rmeta">' + rt.steps.length + ' exercises<span class="dot">·</span>~' + mins + ' min<span class="dot">·</span>' + rt.dev + '</span>' +
+    '</button>';
+}).join('');
+$('#routines').addEventListener('click', e => {
+  const b = e.target.closest('.routine'); if (!b) return;
+  initAudio(); openRoutine(ROUTINES[+b.dataset.i]);
+});
+startBtn.addEventListener('click', () => {
+  initAudio();
+  if (phase === 'idle') { phase = 'prep'; prepLeft = steps[idx].prep; lastPrepInt = 99; last = performance.now(); }
+  else if (phase === 'paused') { phase = prevPhase; last = performance.now(); }
+  else { prevPhase = phase; phase = 'paused'; }
+  render();
+});
+$('#stop').addEventListener('click', goHome);
+$('#skipBtn').addEventListener('click', () => { if (phase === 'idle') return; if (idx + 1 < steps.length) beginStep(idx + 1); else finish(); });
+$('#back').addEventListener('click', goHome);
+$('#again').addEventListener('click', goHome);
+const muteBtn = $('#mute');
+function paintMute() { muteBtn.innerHTML = muted ? ICON.soundOff : ICON.soundOn; muteBtn.setAttribute('aria-label', muted ? 'Sound off' : 'Sound on'); }
+muteBtn.addEventListener('click', () => { muted = !muted; localStorage.setItem('bajrang_mute', muted ? '1' : '0'); paintMute(); if (!muted) { initAudio(); cue.step(); } });
+paintMute();
+$('#medalIcon').innerHTML = ICON.medal;
+
+document.addEventListener('pointerdown', initAudio, { once: true });
+document.addEventListener('visibilitychange', () => { if (document.hidden && (phase === 'run' || phase === 'prep')) { prevPhase = phase; phase = 'paused'; } });
+window.addEventListener('keydown', e => { if (e.code === 'Space' && $('#player').classList.contains('on')) { e.preventDefault(); startBtn.click(); } });
+
+last = performance.now();
+requestAnimationFrame(tick);
+
+</script>
+</body>
+</html>
