@@ -11,7 +11,7 @@
 <meta name="description" content="Bajrang — a simple, motivating exercise buddy for young champions. Animated routines, timers and gentle sound cues.">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1122'/%3E%3Ccircle cx='32' cy='20' r='6.5' fill='%23F2A93B'/%3E%3Cpath d='M32 28v15M32 32l-11 7M32 32l11 7M32 43l-9 13M32 43l9 13' stroke='%23F2A93B' stroke-width='5' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E1122'/%3E%3Ccircle cx='20' cy='33' r='7' fill='%23F2A445'/%3E%3Ccircle cx='44' cy='33' r='7' fill='%23F2A445'/%3E%3Ccircle cx='32' cy='33' r='17' fill='%23F2A445'/%3E%3Cellipse cx='32' cy='39' rx='10' ry='7.5' fill='%23FFEBCB'/%3E%3Cellipse cx='26' cy='31' rx='2.4' ry='3.2' fill='%233A2416'/%3E%3Cellipse cx='38' cy='31' rx='2.4' ry='3.2' fill='%233A2416'/%3E%3Cpath d='M28 42 q4 3.5 8 0' stroke='%233A2416' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3Cpath d='M25 18 l3 4 l4 -6 l4 6 l3 -4 l0 5 l-14 0 z' fill='%23F6C750'/%3E%3C/svg%3E">
 <title>Bajrang · Exercise Buddy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,7 +81,7 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
 .pmain{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 14px calc(env(safe-area-inset-bottom,0px) + 10px)}
 .stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
 .stage svg{height:100%;width:100%;max-height:100%;overflow:visible}
-#figLayer{filter:drop-shadow(0 6px 26px rgba(242,169,59,.22))}
+#figLayer{filter:drop-shadow(0 0 9px rgba(242,169,59,.16))}
 .info{text-align:center;flex:0 0 auto;padding:2px 0 2px}
 .exname{font-family:'Marcellus',serif;font-size:clamp(24px,6.6vw,38px);line-height:1.05}
 .exdev{color:var(--saffron);opacity:.85;font-size:clamp(13px,3.4vw,17px);margin-top:1px}
@@ -324,7 +324,7 @@ function keysAnim(keys) { // keys: [[t,pose],...]
   };
 }
 
-const STAND = { hip: [200, 250], torso: 180, handL: [188, 252], handR: [212, 252], footL: [190, 400], footR: [210, 400], headOff: 0, lateral: 11, eL: 1, eR: -1, kL: -1, kR: 1 };
+const STAND = { hip: [200, 250], torso: 180, handL: [170, 256], handR: [230, 256], footL: [190, 400], footR: [210, 400], headOff: 0, lateral: 11, eL: 1, eR: -1, kL: -1, kR: 1 };
 function P(o) { return Object.assign({}, STAND, o); }
 
 // ---------- exercise animations ----------
@@ -419,6 +419,70 @@ const EXERCISES = {
   swing: { label: 'Jerky Swings', anim: swing, bar: true },
   hipyoga: { label: 'Hip Yoga Flow', anim: seqAnim(HIP), ground: true }
 };
+
+/* ---------- cute character renderer (chibi Hanuman) ---------- */
+const C_SKIN = '#F2A445', C_SKIN_D = '#E89A38', C_SKIN_L = '#FFD79A', C_CREAM = '#FFEBCB',
+  C_DARK = '#3A2416', C_GOLD = '#F6C750', C_GOLD_D = '#C9901C', C_DHOTI = '#D9552F';
+
+function cap(a, b, w, col) {
+  return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+
+function charHead(HR) {
+  const r = HR;
+  let s = '';
+  s += `<ellipse cx="${-r - 2}" cy="0" rx="${r * 0.35}" ry="${r * 0.4}" fill="${C_SKIN}"/><ellipse cx="${r + 2}" cy="0" rx="${r * 0.35}" ry="${r * 0.4}" fill="${C_SKIN}"/>`;
+  s += `<ellipse cx="${-r - 2}" cy="0" rx="${r * 0.17}" ry="${r * 0.22}" fill="${C_SKIN_L}"/><ellipse cx="${r + 2}" cy="0" rx="${r * 0.17}" ry="${r * 0.22}" fill="${C_SKIN_L}"/>`;
+  s += `<circle cx="0" cy="0" r="${r}" fill="${C_SKIN}"/>`;
+  s += `<ellipse cx="0" cy="${r * 0.34}" rx="${r * 0.58}" ry="${r * 0.44}" fill="${C_CREAM}"/>`;
+  s += `<ellipse cx="${-r * 0.33}" cy="${-r * 0.06}" rx="${r * 0.135}" ry="${r * 0.185}" fill="${C_DARK}"/><ellipse cx="${r * 0.33}" cy="${-r * 0.06}" rx="${r * 0.135}" ry="${r * 0.185}" fill="${C_DARK}"/>`;
+  s += `<circle cx="${-r * 0.28}" cy="${-r * 0.13}" r="${r * 0.055}" fill="#fff"/><circle cx="${r * 0.38}" cy="${-r * 0.13}" r="${r * 0.055}" fill="#fff"/>`;
+  s += `<path d="M${-r * 0.5} ${-r * 0.33} q ${r * 0.17} ${-r * 0.13} ${r * 0.34} 0" stroke="${C_DARK}" stroke-width="2.3" fill="none" stroke-linecap="round"/>`;
+  s += `<path d="M${r * 0.16} ${-r * 0.33} q ${r * 0.17} ${-r * 0.13} ${r * 0.34} 0" stroke="${C_DARK}" stroke-width="2.3" fill="none" stroke-linecap="round"/>`;
+  s += `<ellipse cx="0" cy="${r * 0.15}" rx="${r * 0.12}" ry="${r * 0.085}" fill="${C_SKIN_D}"/>`;
+  s += `<path d="M${-r * 0.22} ${r * 0.5} q ${r * 0.22} ${r * 0.2} ${r * 0.44} 0" stroke="${C_DARK}" stroke-width="2.3" fill="none" stroke-linecap="round"/>`;
+  s += `<circle cx="${-r * 0.62}" cy="${r * 0.3}" r="${r * 0.1}" fill="#F07A5A" opacity="0.45"/><circle cx="${r * 0.62}" cy="${r * 0.3}" r="${r * 0.1}" fill="#F07A5A" opacity="0.45"/>`;
+  s += `<path d="M${-r * 0.13} ${-r * 0.56} q ${r * 0.13} ${r * 0.24} ${r * 0.26} 0" stroke="${C_GOLD}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const cy = -r * 0.84;
+  s += `<path d="M${-r * 0.5} ${cy} L${-r * 0.5} ${cy - r * 0.2} L${-r * 0.22} ${cy - r * 0.02} L0 ${cy - r * 0.36} L${r * 0.22} ${cy - r * 0.02} L${r * 0.5} ${cy - r * 0.2} L${r * 0.5} ${cy} Z" fill="${C_GOLD}" stroke="${C_GOLD_D}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  s += `<circle cx="0" cy="${cy - r * 0.36}" r="${r * 0.075}" fill="${C_DHOTI}"/>`;
+  return s;
+}
+
+function limbSVG(L, w, col) {
+  const e = L[2];
+  return cap(L[0], L[1], w, col) + cap(L[1], L[2], w * 0.92, col) +
+    `<circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="${(w * 0.58).toFixed(1)}" fill="${col}"/>`;
+}
+
+function charSVG(p, opt) {
+  opt = opt || {};
+  const g = buildPose(p);
+  const t = opt.t || 0;
+  const sway = Math.sin(t * Math.PI * 2) * 7;
+  const td = dir(p.torso);
+  const perp = [td[1], -td[0]];
+  let s = '';
+  if (opt.ground) s += `<ellipse cx="${g.hip[0].toFixed(0)}" cy="${opt.groundY || 402}" rx="72" ry="10" fill="rgba(0,0,0,.35)"/>`;
+  s += `<g transform="translate(${g.hip[0].toFixed(1)},${g.hip[1].toFixed(1)}) rotate(${sway.toFixed(1)})"><path d="M0 0 C 32 8, 58 42, 36 74 C 26 90, 2 84, 8 62" fill="none" stroke="${C_SKIN}" stroke-width="16" stroke-linecap="round"/><circle cx="8" cy="62" r="10" fill="${C_SKIN_L}"/></g>`;
+  s += limbSVG(g.legR, 30, C_SKIN_D);
+  s += limbSVG(g.armR, 26, C_SKIN_D);
+  s += cap(g.hip, g.shoulder, 56, C_SKIN);
+  const dTop = [g.hip[0] + td[0] * 44, g.hip[1] + td[1] * 44];
+  s += cap(g.hip, dTop, 60, C_DHOTI);
+  const bandC = [g.hip[0] + td[0] * 32, g.hip[1] + td[1] * 32];
+  s += cap([bandC[0] + perp[0] * 26, bandC[1] + perp[1] * 26], [bandC[0] - perp[0] * 26, bandC[1] - perp[1] * 26], 7, C_GOLD);
+  s += limbSVG(g.legL, 30, C_SKIN);
+  s += limbSVG(g.armL, 26, C_SKIN);
+  const HR = 40, HD = HR + 6;
+  const hd2 = dir(Math.atan2(g.headC[0] - g.shoulder[0], g.headC[1] - g.shoulder[1]) / R);
+  const hx = g.shoulder[0] + hd2[0] * HD, hy = g.shoulder[1] + hd2[1] * HD;
+  s += cap(g.shoulder, [hx, hy], 22, C_SKIN);
+  const ang = Math.atan2(hd2[0], hd2[1]) / R;
+  const rot = Math.max(-48, Math.min(48, (ang - 180) * 0.45));
+  s += `<g transform="translate(${hx.toFixed(1)},${hy.toFixed(1)}) rotate(${rot.toFixed(1)})">${charHead(HR)}</g>`;
+  return s;
+}
 
 
 /* ================= Bajrang — app logic ================= */
@@ -534,7 +598,8 @@ function animT(st) {
 
 function render() {
   const st = steps[idx];
-  figLayer.innerHTML = poseSVG(EXERCISES[st.id].anim(animT(st)), {});
+  const tt = animT(st);
+  figLayer.innerHTML = charSVG(EXERCISES[st.id].anim(tt), { t: tt });
   exNameEl.textContent = st.cat.name;
   exDevEl.textContent = st.cat.dev || '';
   let big = '', sub = '', frac = 0, line = '', rline = '';

@@ -9,9 +9,9 @@ companion for dands, surya namaskar and pull-ups.
 
 ## What it does
 
-- **Animated guidance.** Every exercise is drawn as a moving figure that performs the
-  movement in time with the timer — push-ups press, the pull-up rises to the bar, the
-  hips open in the yoga flow.
+- **Animated guidance.** Every exercise is performed by a cheerful little Hanuman —
+  crown, dhoti and curly tail and all — who moves in time with the timer: push-ups
+  press, the pull-up rises to the bar, the hips open in the yoga flow.
 - **Timers for everything.** Rep counts tick up, holds count down, and Surya Namaskar
   walks through all 12 steps.
 - **Gentle sound cues.** A soft tone marks every rep, every Surya Namaskar step and
