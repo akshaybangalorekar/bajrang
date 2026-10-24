@@ -40,14 +40,32 @@ ordinary monkey, so every pose can be copied as a movement rather than a mascot.
 | 💪 **Veer Upper Body** | Arms, shoulders and grip | ~5 min |
 | 🌅 **Surya & Cardio** | Warm-up, Surya Namaskar, cardio finish | ~12 min |
 | 🧘 **Hips & Calm** | Hip openers and gentle holding | ~4 min |
+| ⬆ **Unnati · Growth** | Hanging, stretching and posture work | ~5 min |
+| 🛡 **Balam · Muscle** | Bodyweight strength — legs, core, arms | ~4 min |
+| 🔥 **Urja · Stamina** | Heart and lungs | ~6 min |
+
+> **A note on "height gain".** No exercise makes a child taller — height is mostly set
+> by genetics, food and sleep. What the growth routine *can* do is help him stand at
+> his full height: hanging and stretching decompress the spine, and the posture work
+> (Superman, Bridge, side stretch) strengthens the back and shoulders so he does not
+> slump. Pair it with good sleep and food; the app is not a substitute for those.
 
 ## The exercises
 
-Skipping (300) · Spot Jogging (300) · Surya Namaskar (10 rounds) · Push-ups (10) ·
-Hanuman Dand (10) · Burpees (10) · Pull-ups (10) · Dead Hang (120 s) ·
+**Original set** — Skipping (300) · Spot Jogging (300) · Surya Namaskar (10 rounds) ·
+Push-ups (10) · Hanuman Dand (10) · Burpees (10) · Pull-ups (10) · Dead Hang (120 s) ·
 Knees to Chest, hanging (10) · Jerky Swings (10) · Hip Yoga Flow
 (Baddha Konasana · Butterfly, Malasana · Deep Squat, Utkata Konasana · Goddess,
 Skandasana · Side Lunge, Upavistha Konasana · Wide Angle, Prasarita · Standing Wide).
+
+**Growth & posture** — Active Hang (30 s) · Standing Side Stretch (10) ·
+Calf Raises (20) · Superman (10) · Bridge (10).
+
+**Muscle** — Squats (15) · Lunges (10) · Mountain Climbers (20) · Wall Sit (30 s) ·
+Leg Raises (12).
+
+**Stamina** — Jumping Jacks (30) · High Knees (40) · Star Jumps (15) ·
+Squat Jumps (10) · Shadow Boxing (30).
 
 ## Using it
 
