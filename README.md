@@ -10,18 +10,16 @@ ordinary monkey, so every pose can be copied as a movement rather than a mascot.
 
 ## What it does
 
-- **Animated guidance, shown from the right angle.** Each exercise is demonstrated by
-  a slim, lifelike monkey — seen from the **side** for push-ups, planks, lunges,
-  squats, burpees and the whole Surya Namaskar flow, and from the **front** for
-  skipping, jogging, pull-ups and the seated hip poses. The movement matches the
-  timer exactly, so the form can be copied rep for rep.
-- **Correct form.** Poses are built on real joint angles, not approximations: the
-  push-up holds a straight line from head to heels with the elbows folding back,
-  the plank keeps the hips level, and Butterfly shows the soles together and the
-  knees dropping out.
+- **Real demonstration artwork.** Every exercise is shown as a clear anatomical
+  illustration of a person performing it — three frames per movement, played as a
+  flip-book in step with the timer, so the form can be copied rep for rep. Surya
+  Namaskar walks through all twelve positions; the hip flow holds each pose.
+- **Correct form.** The artwork is drawn from real human proportions (the
+  Everkinetic exercise library), not approximated: the push-up holds a straight
+  line from head to heels, the plank keeps the hips level, and Butterfly shows the
+  soles together with the knees dropping out.
 - **How-to cues.** Short instructions appear under each exercise while it runs
   ("Hands under your shoulders, body in ONE straight line").
-- **Motion arrows.** A pulsing arrow marks the direction of movement on the lifts.
 - **Timers for everything.** Rep counts tick up, holds count down, and Surya Namaskar
   walks through all 12 steps.
 - **Gentle sound cues.** A soft tone marks every rep, every Surya Namaskar step and
@@ -54,9 +52,9 @@ ordinary monkey, so every pose can be copied as a movement rather than a mascot.
 
 **Original set** — Skipping (300) · Spot Jogging (300) · Surya Namaskar (10 rounds) ·
 Push-ups (10) · Hanuman Dand (10) · Burpees (10) · Pull-ups (10) · Dead Hang (120 s) ·
-Knees to Chest, hanging (10) · Jerky Swings (10) · Hip Yoga Flow
-(Baddha Konasana · Butterfly, Malasana · Deep Squat, Utkata Konasana · Goddess,
-Skandasana · Side Lunge, Upavistha Konasana · Wide Angle, Prasarita · Standing Wide).
+Knees to Chest, hanging (10) · Hanging Leg Raise (10) · Hip Yoga Flow
+(Baddha Konasana · Butterfly, Cat-Cow, Child's Pose, Seated Forward Fold,
+Anjaneyasana · Hip Flexor, Torso Twist).
 
 **Growth & posture** — Active Hang (30 s) · Standing Side Stretch (10) ·
 Calf Raises (20) · Superman (10) · Bridge (10).
@@ -64,8 +62,15 @@ Calf Raises (20) · Superman (10) · Bridge (10).
 **Muscle** — Squats (15) · Lunges (10) · Mountain Climbers (20) · Wall Sit (30 s) ·
 Leg Raises (12).
 
-**Stamina** — Jumping Jacks (30) · High Knees (40) · Star Jumps (15) ·
-Squat Jumps (10) · Shadow Boxing (30).
+**Stamina** — Jumping Jacks (30) · High Knees (40) · Skater Hops (16) ·
+Squat Jumps (10) · Fast Feet (40).
+
+## Credits
+
+Exercise illustrations by **Bryl Lim** ([workout-guide](https://github.com/bryllim/workout-guide)),
+derived from the **Everkinetic** pose artwork, licensed
+**[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)**. The illustrations
+are used unmodified and credited here and in the app footer.
 
 ## Using it
 

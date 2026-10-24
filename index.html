@@ -47,7 +47,7 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
 .homewrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:clamp(18px,4vw,40px) clamp(16px,4vw,40px) 40px;width:100%}
 .hero{text-align:center;padding:clamp(14px,3vh,34px) 0 clamp(16px,3vh,30px)}
 .hero-pose{display:flex;justify-content:center;height:clamp(72px,15vw,108px);filter:drop-shadow(0 0 26px rgba(242,169,59,.4))}
-.hero-pose svg{height:100%;width:auto;display:block;overflow:visible}
+.hero-pose img{height:100%;width:auto;display:block}
 .hero h1{font-size:clamp(40px,10vw,76px);letter-spacing:.02em;margin:.08em 0 .05em;background:linear-gradient(180deg,#FFF6E4,#F2A93B 70%,#D98A20);-webkit-background-clip:text;background-clip:text;color:transparent}
 .tag{margin:.2em 0 0;color:var(--muted);font-size:clamp(14px,3.4vw,18px);letter-spacing:.01em}
 .sub{margin:.35em 0 0;color:var(--gold);opacity:.75;font-size:clamp(12px,3vw,15px);letter-spacing:.14em}
@@ -81,10 +81,9 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
 .iconbtn:hover{background:rgba(255,255,255,.1)}
 .pmain{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0 14px calc(env(safe-area-inset-bottom,0px) + 10px)}
 .stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
-.stage svg{height:100%;width:100%;max-height:100%;overflow:visible}
-#figLayer{filter:drop-shadow(0 0 9px rgba(242,169,59,.16))}
-.arrows{animation:arrowPulse 1.5s ease-in-out infinite}
-@keyframes arrowPulse{0%,100%{opacity:.3}50%{opacity:.95}}
+.stage img{height:100%;width:100%;max-height:100%;object-fit:contain}
+#exImg{filter:drop-shadow(0 0 12px rgba(242,169,59,.16))}
+.credit{font-size:11px;opacity:.55}
 .info{text-align:center;flex:0 0 auto;padding:2px 0 2px}
 .exname{font-family:'Marcellus',serif;font-size:clamp(24px,6.6vw,38px);line-height:1.05}
 .exdev{color:var(--saffron);opacity:.85;font-size:clamp(13px,3.4vw,17px);margin-top:1px}
@@ -164,13 +163,13 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
 <section class="screen on" id="home">
   <div class="homewrap">
     <header class="hero">
-      <div class="hero-pose" id="heroPose" aria-hidden="true"></div>
+      <div class="hero-pose"><img src="ex/jumping-jack-2.svg" alt="" draggable="false"></div>
       <h1>Bajrang</h1>
       <p class="tag">Your exercise buddy — strong, simple, and fun.</p>
       <p class="sub">बजरंग · बल · अनुशासन</p>
     </header>
     <div class="routines" id="routines"></div>
-    <footer class="foot">Pick a routine and press Start. Stay strong, little Bajrang!</footer>
+    <footer class="foot">Pick a routine and press Start. Stay strong, little Bajrang!<br><span class="credit">Exercise illustrations: Bryl Lim / Everkinetic · CC BY-SA 4.0</span></footer>
   </div>
 </section>
 
@@ -183,11 +182,7 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
   </div>
   <div class="pmain">
     <div class="stage">
-      <svg id="fig" viewBox="0 0 400 460" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <g id="bgLayer"></g>
-        <g id="arrowLayer"></g>
-        <g id="figLayer"></g>
-      </svg>
+      <img id="exImg" alt="" draggable="false">
     </div>
     <div class="panel">
       <div class="info">
@@ -236,409 +231,13 @@ h1,h2,h3{font-family:'Marcellus',Georgia,'Times New Roman',serif;font-weight:400
 </section>
 
 <script>
-// Bajrang — realistic monkey figure engine + exercise animations
-const R = Math.PI / 180;
-const dir = a => [Math.sin(a * R), Math.cos(a * R)];
-
-const L_TORSO = 82, L_UA = 66, L_FA = 62, L_TH = 80, L_SH = 74; // arm 128, leg 154
-const FLOOR = 400;
-
-function ik(root, target, l1, l2, sign) {
-  let dx = target[0] - root[0], dy = target[1] - root[1];
-  let d = Math.hypot(dx, dy);
-  d = Math.min(l1 + l2 - 0.01, Math.max(Math.abs(l1 - l2) + 0.01, d));
-  const base = Math.atan2(dx, dy) / R;
-  const cosA = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
-  const A = Math.acos(Math.max(-1, Math.min(1, cosA))) / R;
-  const ang = (base + sign * A) * R;
-  const mid = [root[0] + Math.sin(ang) * l1, root[1] + Math.cos(ang) * l1];
-  return [root, mid, [target[0], target[1]]];
-}
-// pick the IK solution whose joint lands nearest the hint (anatomical bend direction)
-function ikHint(root, target, l1, l2, hint, sign) {
-  if (!hint) return ik(root, target, l1, l2, sign === undefined ? 1 : sign);
-  const a = ik(root, target, l1, l2, 1), b = ik(root, target, l1, l2, -1);
-  const da = Math.hypot(a[1][0] - hint[0], a[1][1] - hint[1]);
-  const db = Math.hypot(b[1][0] - hint[0], b[1][1] - hint[1]);
-  return da <= db ? a : b;
-}
-
-function buildPose(p) {
-  const lat = p.lateral === undefined ? 15 : p.lateral;
-  const td = dir(p.torso);
-  const shoulder = [p.hip[0] + td[0] * L_TORSO, p.hip[1] + td[1] * L_TORSO];
-  const perp = [td[1], -td[0]];
-  const sl = [shoulder[0] + perp[0] * lat, shoulder[1] + perp[1] * lat];
-  const sr = [shoulder[0] - perp[0] * lat, shoulder[1] - perp[1] * lat];
-  const hl = [p.hip[0] + perp[0] * lat, p.hip[1] + perp[1] * lat];
-  const hr = [p.hip[0] - perp[0] * lat, p.hip[1] - perp[1] * lat];
-  const armL = ikHint(sl, p.handL, L_UA, L_FA, p.elbowL, p.eL === undefined ? 1 : p.eL);
-  const armR = ikHint(sr, p.handR, L_UA, L_FA, p.elbowR, p.eR === undefined ? -1 : p.eR);
-  const legL = ikHint(hl, p.footL, L_TH, L_SH, p.kneeL, p.kL === undefined ? -1 : p.kL);
-  const legR = ikHint(hr, p.footR, L_TH, L_SH, p.kneeR, p.kR === undefined ? 1 : p.kR);
-  const hd = dir(p.torso + (p.headOff || 0));
-  const headC = [shoulder[0] + hd[0] * 26, shoulder[1] + hd[1] * 26];
-  return { hip: p.hip, shoulder, sl, sr, hl, hr, armL, armR, legL, legR, headC, lat, perp, td };
-}
-
-/* ================= realistic monkey renderer ================= */
-const F_FUR = '#8E8577', F_FUR_D = '#6E665A', F_FUR_L = '#A79C8A',
-  F_FACE = '#CBBFA8', F_FACE_L = '#E2D8C5', F_DARK = '#26262A', F_EXT = '#3A3A40';
-
-const lerp = (a, b, u) => a + (b - a) * u;
-const lerpPt = (a, b, u) => [lerp(a[0], b[0], u), lerp(a[1], b[1], u)];
-const angLerp = (a, b, u) => { const d = ((b - a + 540) % 360) - 180; return a + d * u; };
-function lerpPose(A, B, u) {
-  const o = {};
-  ['hip', 'handL', 'handR', 'footL', 'footR'].forEach(k => o[k] = lerpPt(A[k], B[k], u));
-  o.torso = angLerp(A.torso, B.torso, u);
-  o.headOff = lerp(A.headOff || 0, B.headOff || 0, u);
-  o.lateral = lerp(A.lateral, B.lateral, u);
-  ['elbowL', 'elbowR', 'kneeL', 'kneeR'].forEach(k => { if (A[k] && B[k]) o[k] = lerpPt(A[k], B[k], u); else if (B[k]) o[k] = B[k]; else if (A[k]) o[k] = A[k]; });
-  ['eL', 'eR', 'kL', 'kR'].forEach(k => { if (A[k] !== undefined) o[k] = A[k]; });
-  return o;
-}
-function seqAnim(poses) {
-  const n = poses.length;
-  return t => { const x = ((t % 1) + 1) % 1 * n; const i = Math.floor(x) % n; return lerpPose(poses[i], poses[(i + 1) % n], x - Math.floor(x)); };
-}
-function keysAnim(keys) {
-  return t => {
-    t = ((t % 1) + 1) % 1;
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (t >= keys[i][0] && t <= keys[i + 1][0]) {
-        const u = (t - keys[i][0]) / (keys[i + 1][0] - keys[i][0] || 1);
-        return lerpPose(keys[i][1], keys[i + 1][1], u * u * (3 - 2 * u));
-      }
-    }
-    return keys[keys.length - 1][1];
-  };
-}
-
-function bone(a, b, w1, w2, col) {
-  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
-  const px = -dy / L, py = dx / L;
-  const P = (pt, s, w) => `${(pt[0] + s * px * w / 2).toFixed(1)},${(pt[1] + s * py * w / 2).toFixed(1)}`;
-  return `<path d="M${P(a, 1, w1)} L${P(b, 1, w2)} L${P(b, -1, w2)} L${P(a, -1, w1)} Z" fill="${col}"/>` +
-    `<circle cx="${a[0].toFixed(1)}" cy="${a[1].toFixed(1)}" r="${(w1 / 2).toFixed(1)}" fill="${col}"/>` +
-    `<circle cx="${b[0].toFixed(1)}" cy="${b[1].toFixed(1)}" r="${(w2 / 2).toFixed(1)}" fill="${col}"/>`;
-}
-const dot = (p, r, col) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r}" fill="${col}"/>`;
-
-function headFront(r) {
-  let s = '';
-  s += dot([-r - 1, -1], r * 0.34, F_FUR) + dot([r + 1, -1], r * 0.34, F_FUR);
-  s += dot([-r - 1, -1], r * 0.16, F_FACE) + dot([r + 1, -1], r * 0.16, F_FACE);
-  s += dot([0, 0], r, F_FUR);
-  s += `<ellipse cx="0" cy="${r * 0.16}" rx="${r * 0.66}" ry="${r * 0.74}" fill="${F_FACE}"/>`;
-  s += `<ellipse cx="${-r * 0.30}" cy="${-r * 0.12}" rx="${r * 0.12}" ry="${r * 0.16}" fill="${F_DARK}"/>`;
-  s += `<ellipse cx="${r * 0.30}" cy="${-r * 0.12}" rx="${r * 0.12}" ry="${r * 0.16}" fill="${F_DARK}"/>`;
-  s += dot([-r * 0.26, -r * 0.19], r * 0.045, '#fff') + dot([r * 0.34, -r * 0.19], r * 0.045, '#fff');
-  s += `<ellipse cx="0" cy="${r * 0.34}" rx="${r * 0.30}" ry="${r * 0.22}" fill="${F_FACE_L}"/>`;
-  s += dot([-r * 0.11, r * 0.30], r * 0.05, F_DARK) + dot([r * 0.11, r * 0.30], r * 0.05, F_DARK);
-  s += `<path d="M${-r * 0.18} ${r * 0.50} q ${r * 0.18} ${r * 0.14} ${r * 0.36} 0" stroke="${F_DARK}" stroke-width="${(r * 0.09).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-  s += `<path d="M${-r * 0.40} ${-r * 0.40} q ${r * 0.16} ${-r * 0.12} ${r * 0.32} 0" stroke="${F_FUR_D}" stroke-width="${(r * 0.10).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-  s += `<path d="M${r * 0.08} ${-r * 0.40} q ${r * 0.16} ${-r * 0.12} ${r * 0.32} 0" stroke="${F_FUR_D}" stroke-width="${(r * 0.10).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-  return s;
-}
-function headSide(r) {
-  let s = '';
-  s += dot([-r * 0.50, -r * 0.16], r * 0.33, F_FUR) + dot([-r * 0.50, -r * 0.16], r * 0.15, F_FACE);
-  s += dot([0, 0], r, F_FUR);
-  s += `<ellipse cx="${r * 0.30}" cy="${r * 0.12}" rx="${r * 0.60}" ry="${r * 0.72}" fill="${F_FACE}"/>`;
-  s += `<ellipse cx="${r * 0.70}" cy="${r * 0.24}" rx="${r * 0.34}" ry="${r * 0.27}" fill="${F_FACE_L}"/>`;
-  s += `<ellipse cx="${r * 0.40}" cy="${-r * 0.14}" rx="${r * 0.12}" ry="${r * 0.16}" fill="${F_DARK}"/>`;
-  s += dot([r * 0.44, -r * 0.21], r * 0.045, '#fff');
-  s += dot([r * 0.84, r * 0.20], r * 0.05, F_DARK);
-  s += `<path d="M${r * 0.60} ${r * 0.42} q ${r * 0.16} ${r * 0.10} ${r * 0.28} ${-r * 0.02}" stroke="${F_DARK}" stroke-width="${(r * 0.09).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-  s += `<path d="M${-r * 0.05} ${-r * 0.42} q ${r * 0.22} ${-r * 0.14} ${r * 0.44} ${-r * 0.02}" stroke="${F_FUR_D}" stroke-width="${(r * 0.11).toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-  return s;
-}
-function footSVG(ankle, knee, col) {
-  const sx = ankle[0] - knee[0], sy = ankle[1] - knee[1];
-  let fx = sy, fy = -sx;
-  if (fx < 0) { fx = -fx; fy = -fy; }
-  const n = Math.hypot(fx, fy) || 1; fx /= n; fy /= n;
-  const mid = [ankle[0] + fx * 6, ankle[1] + fy * 6];
-  const ang = Math.atan2(fy, fx) / R;
-  return `<ellipse cx="${mid[0].toFixed(1)}" cy="${mid[1].toFixed(1)}" rx="10.5" ry="6.4" fill="${col}" transform="rotate(${ang.toFixed(1)} ${mid[0].toFixed(1)} ${mid[1].toFixed(1)})"/>`;
-}
-function limbSVG(L, w1, w2, col, isLeg) {
-  let s = bone(L[0], L[1], w1, w1 * 0.86, col) + bone(L[1], L[2], w1 * 0.86, w2, col);
-  if (isLeg) s += footSVG(L[2], L[1], F_EXT);
-  else s += dot([L[2][0] + (L[2][0] - L[1][0]) * 0.06, L[2][1] + (L[2][1] - L[1][1]) * 0.06], w2 * 0.56, F_EXT);
-  return s;
-}
-
-function monkeySVG(p, opt) {
-  opt = opt || {};
-  const g = buildPose(p);
-  const side = opt.view === 'side';
-  const t = opt.t || 0;
-  const sway = Math.sin(t * Math.PI * 2) * 8;
-  let s = '';
-  if (opt.ground) s += `<ellipse cx="${g.hip[0].toFixed(0)}" cy="${FLOOR + 2}" rx="78" ry="9" fill="rgba(0,0,0,.32)"/>`;
-  s += `<g transform="translate(${g.hip[0].toFixed(1)},${g.hip[1].toFixed(1)}) rotate(${sway.toFixed(1)})${side ? ' scale(-1,1)' : ''}"><path d="M0 0 C 26 6, 52 28, 46 62 C 42 88, 18 94, 10 76" fill="none" stroke="${F_FUR}" stroke-width="9" stroke-linecap="round"/><circle cx="10" cy="76" r="5.5" fill="${F_FUR_D}"/></g>`;
-  s += limbSVG(g.legR, 21, 15, F_FUR_D, true);
-  s += limbSVG(g.armR, 15, 10, F_FUR_D, false);
-  s += bone(g.hip, g.shoulder, 27, 34, F_FUR);
-  const mx = (g.hip[0] + g.shoulder[0]) / 2, my = (g.hip[1] + g.shoulder[1]) / 2;
-  s += `<ellipse cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" rx="${side ? 7 : 11}" ry="${side ? 19 : 25}" fill="${F_FUR_L}" opacity="0.45" transform="rotate(${(p.torso - 180).toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})"/>`;
-  s += limbSVG(g.legL, 21, 15, F_FUR, true);
-  s += limbSVG(g.armL, 15, 10, F_FUR, false);
-  const hd = dir(p.torso + (p.headOff || 0));
-  s += bone(g.shoulder, [g.shoulder[0] + hd[0] * 12, g.shoulder[1] + hd[1] * 12], 17, 15, F_FUR);
-  const ang = Math.atan2(hd[0], hd[1]) / R;
-  const rot = Math.max(-50, Math.min(50, (ang - 180) * 0.5));
-  s += `<g transform="translate(${g.headC[0].toFixed(1)},${g.headC[1].toFixed(1)}) rotate(${rot.toFixed(1)})">${side ? headSide(21) : headFront(21)}</g>`;
-  return s;
-}
-
-function arrowSVG(a, b, both) {
-  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
-  const ux = dx / L, uy = dy / L, h = 10;
-  const head = (px, py, dx2, dy2) => {
-    const nx = -dy2, ny = dx2, w = 6.5;
-    return `<path d="M${px.toFixed(1)},${py.toFixed(1)} L${(px - dx2 * h + nx * w).toFixed(1)},${(py - dy2 * h + ny * w).toFixed(1)} L${(px - dx2 * h - nx * w).toFixed(1)},${(py - dy2 * h - ny * w).toFixed(1)} Z" fill="#F2A93B"/>`;
-  };
-  let s = `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#F2A93B" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>`;
-  s += head(b[0], b[1], ux, uy);
-  if (both) s += head(a[0], a[1], -ux, -uy);
-  return s;
-}
-const arrowsSVG = list => !list || !list.length ? '' : '<g class="arrows">' + list.map(a => arrowSVG(a.a, a.b, a.both)).join('') + '</g>';
-
-const STAND = { hip: [200, 234], torso: 180, handL: [176, 280], handR: [224, 280], footL: [192, 388], footR: [208, 388], headOff: 0, lateral: 15 };
-function P(o) { return Object.assign({}, STAND, o); }
-const kneeOver = (f, up) => [f[0], f[1] - (up || 42)];   // knee directly above the foot
-
-/* ================= exercise animations ================= */
-function skip(t) {
-  const s = Math.sin(Math.PI * t);
-  const fy = 388 - 18 * s;
-  return P({
-    hip: [200, 234 - 15 * s],
-    handL: [170 + 8 * Math.cos(2 * Math.PI * t), 264 + 8 * Math.sin(2 * Math.PI * t)],
-    handR: [230 - 8 * Math.cos(2 * Math.PI * t), 264 + 8 * Math.sin(2 * Math.PI * t)],
-    footL: [192, fy], footR: [208, fy], kneeL: [190, fy - 34], kneeR: [210, fy - 34]
-  });
-}
-function jog(t) {
-  const p = 2 * Math.PI * t, l = Math.max(0, Math.sin(p)), r = Math.max(0, -Math.sin(p));
-  const fLy = 388 - 70 * l, fRy = 388 - 70 * r;
-  return P({
-    hip: [200, 234 - 7 * Math.abs(Math.sin(p))],
-    footL: [190 - 8 * l, fLy], footR: [210 + 8 * r, fRy],
-    handL: [172, 216 + 22 * l], handR: [228, 216 + 22 * r],
-    kneeL: [198, fLy - 44], kneeR: [202, fRy - 44]
-  });
-}
-// push-up — body straight head→heels, hands under shoulders, elbows fold back
-function pushup(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const th = (26.7 - 11 * u) * R;
-  const ankle = [80, 384];
-  const sh = [ankle[0] + 236 * Math.cos(th), ankle[1] - 236 * Math.sin(th)];
-  const hip = [ankle[0] + 154 * Math.cos(th), ankle[1] - 154 * Math.sin(th)];
-  return P({
-    hip, torso: Math.atan2(sh[0] - hip[0], sh[1] - hip[1]) / R,
-    handL: [sh[0], FLOOR], handR: [sh[0], FLOOR], footL: ankle, footR: ankle,
-    elbowL: [sh[0] - 54, sh[1] + 22], elbowR: [sh[0] - 54, sh[1] + 22],
-    kneeL: [154, 330], kneeR: [154, 330],
-    headOff: -10, lateral: 5
-  });
-}
-const DAND = keysAnim([
-  [0, P({ hip: [200, 236], torso: 62, handL: [268, 394], handR: [268, 394], footL: [156, 388], footR: [156, 388], kneeL: [180, 330], kneeR: [180, 330], headOff: 24, lateral: 5 })],
-  [0.36, P({ hip: [196, 296], torso: 92, handL: [288, 394], handR: [288, 394], footL: [112, 388], footR: [112, 388], kneeL: [150, 330], kneeR: [150, 330], elbowL: [240, 300], elbowR: [240, 300], headOff: 26, lateral: 5 })],
-  [0.66, P({ hip: [184, 372], torso: 132, handL: [258, 394], handR: [258, 394], footL: [94, 388], footR: [94, 388], kneeL: [130, 386], kneeR: [130, 386], elbowL: [230, 380], elbowR: [230, 380], headOff: -28, lateral: 5 })],
-  [1, P({ hip: [200, 236], torso: 62, handL: [268, 394], handR: [268, 394], footL: [156, 388], footR: [156, 388], kneeL: [180, 330], kneeR: [180, 330], headOff: 24, lateral: 5 })]
-]);
-// side-view squat: both legs overlap, knees travel forward
-const squatPose = (hipY, hands) => P({ hip: [200, hipY], torso: 176, handL: hands, handR: hands, footL: [200, 388], footR: [200, 388], kneeL: [236, hipY + 40], kneeR: [236, hipY + 40], elbowL: [222, hipY - 10], elbowR: [222, hipY - 10], lateral: 5 });
-const BURPEE = keysAnim([
-  [0, P({})],
-  [0.24, squatPose(300, [222, 392])],
-  [0.48, pushup(0)],
-  [0.72, squatPose(300, [222, 392])],
-  [0.86, P({ hip: [200, 214], torso: 186, handL: [178, 34], handR: [222, 34], footL: [192, 388], footR: [208, 388], headOff: -8 })],
-  [1, P({})]
-]);
-function pullup(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 236 - 74 * u;
-  return P({
-    hip: [200, hy], torso: 180, handL: [188, 40], handR: [212, 40],
-    footL: [196, hy + 154], footR: [204, hy + 154],
-    elbowL: [158, hy - 34], elbowR: [242, hy - 34], kneeL: [196, hy + 84], kneeR: [204, hy + 84], lateral: 15
-  });
-}
-function hang(t) {
-  const sw = 5 * Math.sin(2 * Math.PI * t * 0.5);
-  return P({ hip: [200 + sw, 236], torso: 180 + sw, handL: [188, 40], handR: [212, 40], footL: [197 + sw, 390], footR: [203 + sw, 390], kneeL: [197 + sw, 314], kneeR: [203 + sw, 314], lateral: 15 });
-}
-function kneeup(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  return P({
-    hip: [200, 236], torso: 180, handL: [190, 40], handR: [210, 40],
-    footL: [200 + 70 * u, 390 - 80 * u], footR: [200 + 70 * u, 390 - 80 * u],
-    kneeL: [200 + 74 * u, 236], kneeR: [200 + 74 * u, 236], lateral: 6
-  });
-}
-function swing(t) {
-  const s = Math.sin(2 * Math.PI * t);
-  return P({ hip: [200 + 34 * s, 236], torso: 180 + 16 * s, handL: [188, 40], handR: [212, 40], footL: [200 + 70 * s, 386], footR: [200 + 70 * s, 386], kneeL: [200 + 40 * s, 320], kneeR: [200 + 40 * s, 320], lateral: 8 });
-}
-
-/* ---- Growth & posture ---- */
-function activehang(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 236 - 10 * u;
-  return P({ hip: [200, hy], torso: 180, handL: [190, 40], handR: [210, 40], footL: [197, hy + 154], footR: [203, hy + 154], kneeL: [197, hy + 80], kneeR: [203, hy + 80], lateral: 15 });
-}
-function sidestretch(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  return P({ hip: [200, 234], torso: 180 + 24 * u, handL: [190, 300], handR: [200 - 78 * u, 74 - 6 * u], elbowL: [186, 246], elbowR: [180 - 44 * u, 156], footL: [192, 388], footR: [208, 388], headOff: -8 * u, lateral: 15 });
-}
-function calfraise(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const up = 21 * u;
-  return P({ hip: [200, 234 - up], torso: 180, handL: [176, 280 - up], handR: [224, 280 - up], footL: [192, 388 - up], footR: [208, 388 - up], kneeL: [192, 330 - up], kneeR: [208, 330 - up], lateral: 15 });
-}
-function superman(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const lift = 26 * u;
-  return P({ hip: [188, 360], torso: 96, handL: [394, 350 - lift], handR: [394, 350 - lift], footL: [34, 378 - lift * 0.6], footR: [34, 378 - lift * 0.6], elbowL: [330, 352], elbowR: [330, 352], kneeL: [110, 372 - lift * 0.3], kneeR: [110, 372 - lift * 0.3], headOff: -20, lateral: 5 });
-}
-function bridge(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 332 - 22 * u;
-  const hip = [200, hy], sh = [hip[0] - 58, 386];
-  const torso = Math.atan2(sh[0] - hip[0], sh[1] - hip[1]) / R;
-  return P({ hip, torso, handL: [166, 394], handR: [166, 394], footL: [272, 388], footR: [272, 388], elbowL: [168, 390], elbowR: [168, 390], kneeL: [252, 336], kneeR: [252, 336], headOff: -24, lateral: 5 });
-}
-
-/* ---- Muscle ---- */
-function squat(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 234 + 72 * u, hip = [200, hy], torso = 180 - 22 * u;
-  const sh = [hip[0] + Math.sin(torso * R) * 82, hip[1] + Math.cos(torso * R) * 82];
-  return P({ hip, torso, handL: [sh[0] + 96 * u, sh[1] + 112 - 102 * u], handR: [sh[0] + 96 * u, sh[1] + 112 - 102 * u], footL: [200, 388], footR: [200, 388], kneeL: [238, hy + 40], kneeR: [238, hy + 40], elbowL: [sh[0] + 60 * u, sh[1] + 70], elbowR: [sh[0] + 60 * u, sh[1] + 70], lateral: 5 });
-}
-function lunge(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 286 + 44 * u;
-  return P({ hip: [200, hy], torso: 180 - 6 * u, handL: [196, hy + 30], handR: [196, hy + 30], footL: [272, 388], footR: [110, 388], elbowL: [214, hy + 6], elbowR: [214, hy + 6], kneeL: [266, hy + 40], kneeR: [186, 382], lateral: 5 });
-}
-function mountain(t) {
-  const p = 2 * Math.PI * t, a = Math.max(0, Math.sin(p)), b = Math.max(0, -Math.sin(p));
-  return P({ hip: [212, 308], torso: 118, handL: [288, 400], handR: [288, 400], footL: [80 + 150 * a, 384 - 46 * a], footR: [80 + 150 * b, 384 - 46 * b], elbowL: [250, 336], elbowR: [250, 336], kneeL: [196 + 40 * a, 350 - 40 * a], kneeR: [196 + 40 * b, 350 - 40 * b], headOff: -8, lateral: 5 });
-}
-function wallsit(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const hy = 292 + 6 * u;
-  return P({ hip: [200, hy], torso: 180, handL: [262, hy + 20], handR: [262, hy + 20], footL: [266, 388], footR: [266, 388], elbowL: [238, hy + 8], elbowR: [238, hy + 8], kneeL: [266, hy], kneeR: [266, hy], lateral: 5 });
-}
-function legraise(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  const ang = (88 + 62 * u) * R;
-  const kx = 180 + 77 * Math.sin(ang), ky = 372 + 77 * Math.cos(ang);
-  return P({ hip: [180, 372], torso: 270, handL: [124, 384], handR: [124, 384], footL: [180 + 154 * Math.sin(ang), 372 + 154 * Math.cos(ang)], footR: [180 + 154 * Math.sin(ang), 372 + 154 * Math.cos(ang)], kneeL: [kx, ky], kneeR: [kx, ky], headOff: 0, lateral: 5 });
-}
-
-/* ---- Stamina ---- */
-function jj(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  return P({ hip: [200, 234 - 14 * u], torso: 180, handL: [176 - 40 * u, 280 - 240 * u], handR: [224 + 40 * u, 280 - 240 * u], footL: [192 - 52 * u, 388 - 4 * u], footR: [208 + 52 * u, 388 - 4 * u], kneeL: [200 - 46 * u, 350], kneeR: [200 + 46 * u, 350], lateral: 15 });
-}
-const SQUATJUMP = keysAnim([
-  [0, P({})],
-  [0.34, squatPose(300, [222, 392])],
-  [0.62, P({ hip: [200, 202], torso: 182, handL: [178, 44], handR: [178, 44], footL: [196, 366], footR: [196, 366], kneeL: [196, 320], kneeR: [196, 320], lateral: 5 })],
-  [1, P({})]
-]);
-function starjump(t) {
-  const u = (1 - Math.cos(2 * Math.PI * t)) / 2;
-  return P({ hip: [200, 234 - 20 * u], torso: 180, handL: [176 - 100 * u, 280 - 180 * u], handR: [224 + 100 * u, 280 - 180 * u], footL: [192 - 52 * u, 388 - 28 * u], footR: [208 + 52 * u, 388 - 28 * u], kneeL: [200 - 54 * u, 350], kneeR: [200 + 54 * u, 350], lateral: 15 });
-}
-function box(t) {
-  const p = 2 * Math.PI * t, a = Math.max(0, Math.sin(p)), b = Math.max(0, -Math.sin(p));
-  return P({ hip: [200, 236], torso: 180 + 7 * Math.sin(p), handL: [200 - 46, 198 - 74 * a], handR: [200 + 46, 198 - 74 * b], elbowL: [200 - 52, 222], elbowR: [200 + 52, 222], footL: [188, 388], footR: [212, 388], kneeL: [188, 346], kneeR: [212, 346], lateral: 15 });
-}
-function highknee(t) {
-  const p = 2 * Math.PI * t, l = Math.max(0, Math.sin(p)), r = Math.max(0, -Math.sin(p));
-  return P({ hip: [200, 234 - 6 * Math.abs(Math.sin(p))], torso: 180, footL: [200 + 90 * l, 388 - 60 * l], footR: [200 + 90 * r, 388 - 60 * r], kneeL: [200 + 96 * l, 330 - 70 * l], kneeR: [200 + 96 * r, 330 - 70 * r], handL: [206 + 50 * l, 226], handR: [196 + 50 * r, 246], lateral: 6 });
-}
-
-/* ---- Surya Namaskar (side view) ---- */
-const SURYA = [
-  P({ hip: [200, 234], torso: 180, handL: [208, 198], handR: [208, 198], footL: [200, 388], footR: [200, 388], elbowL: [224, 182], elbowR: [224, 182], lateral: 5 }),
-  P({ hip: [200, 234], torso: 188, handL: [178, 24], handR: [178, 24], footL: [200, 388], footR: [200, 388], headOff: -8, lateral: 5 }),
-  P({ hip: [200, 234], torso: 64, handL: [246, 394], handR: [246, 394], footL: [200, 388], footR: [200, 388], elbowL: [252, 320], elbowR: [252, 320], headOff: 14, lateral: 5 }),
-  P({ hip: [200, 300], torso: 85, handL: [268, 392], handR: [268, 392], footL: [262, 388], footR: [110, 388], kneeL: kneeOver([262, 388], 50), kneeR: [176, 382], elbowL: [286, 330], elbowR: [286, 330], headOff: 4, lateral: 5 }),
-  P({ hip: [215.6, 311], torso: 118.4, handL: [287.8, 400], handR: [287.8, 400], footL: [80, 384], footR: [80, 384], elbowL: [240, 336], elbowR: [240, 336], kneeL: [156, 336], kneeR: [156, 336], headOff: -10, lateral: 5 }),
-  P({ hip: [200, 330], torso: 42, handL: [272, 394], handR: [272, 394], footL: [112, 388], footR: [112, 388], elbowL: [300, 372], elbowR: [300, 372], kneeL: [175, 398], kneeR: [175, 398], headOff: 30, lateral: 5 }),
-  P({ hip: [185, 378], torso: 135, handL: [258, 394], handR: [258, 394], footL: [96, 388], footR: [96, 388], elbowL: [232, 382], elbowR: [232, 382], kneeL: [128, 386], kneeR: [128, 386], headOff: -32, lateral: 5 }),
-  P({ hip: [200, 240], torso: 67, handL: [275, 400], handR: [275, 400], footL: [157, 388], footR: [157, 388], elbowL: [250, 344], elbowR: [250, 344], kneeL: [172, 330], kneeR: [172, 330], headOff: 22, lateral: 5 }),
-  P({ hip: [200, 300], torso: 85, handL: [268, 392], handR: [268, 392], footL: [110, 388], footR: [262, 388], kneeL: [176, 382], kneeR: kneeOver([262, 388], 50), elbowL: [286, 330], elbowR: [286, 330], headOff: 4, lateral: 5 }),
-  P({ hip: [200, 234], torso: 64, handL: [246, 394], handR: [246, 394], footL: [200, 388], footR: [200, 388], elbowL: [252, 320], elbowR: [252, 320], headOff: 14, lateral: 5 }),
-  P({ hip: [200, 234], torso: 188, handL: [178, 24], handR: [178, 24], footL: [200, 388], footR: [200, 388], headOff: -8, lateral: 5 }),
-  P({ hip: [200, 234], torso: 180, handL: [208, 198], handR: [208, 198], footL: [200, 388], footR: [200, 388], elbowL: [224, 182], elbowR: [224, 182], lateral: 5 })
-];
-
-/* ---- Hip yoga flow (front view) ---- */
-const HIP = [
-  // Baddha Konasana — seated, soles together, knees drop out to the sides
-  P({ hip: [200, 352], torso: 176, handL: [204, 378], handR: [196, 378], footL: [200, 384], footR: [200, 384], kneeL: [130, 374], kneeR: [270, 374], lateral: 11 }),
-  // Malasana — deep wide squat, hands in prayer
-  P({ hip: [200, 322], torso: 176, handL: [202, 274], handR: [198, 280], footL: [140, 388], footR: [260, 388], kneeL: [140, 342], kneeR: [260, 342], lateral: 15 }),
-  // Utkata Konasana — Goddess, legs wide, arms up
-  P({ hip: [200, 314], torso: 180, handL: [146, 196], handR: [254, 196], footL: [148, 388], footR: [252, 388], elbowL: [152, 244], elbowR: [248, 244], kneeL: [148, 340], kneeR: [252, 340], lateral: 16 }),
-  // Skandasana — side lunge, left knee bent out, right leg long
-  P({ hip: [200, 322], torso: 172, handL: [202, 292], handR: [202, 292], footL: [150, 388], footR: [340, 388], kneeL: [150, 346], kneeR: [272, 372], lateral: 14 }),
-  // Upavistha Konasana — seated wide-angle, upright
-  P({ hip: [200, 352], torso: 180, handL: [176, 344], handR: [224, 344], footL: [104, 384], footR: [296, 384], kneeL: [152, 362], kneeR: [248, 362], lateral: 10 }),
-  // Prasarita — standing wide-leg, hands on hips
-  P({ hip: [200, 250], torso: 180, handL: [176, 240], handR: [224, 240], footL: [118, 388], footR: [282, 388], kneeL: [150, 320], kneeR: [250, 320], lateral: 16 })
-];
-
-const EXERCISES = {
-  skip: { label: 'Skipping', anim: skip, view: 'front', ground: true, arrows: [{ a: [256, 296], b: [256, 214], both: true }] },
-  jog: { label: 'Spot Jogging', anim: jog, view: 'front', ground: true },
-  surya: { label: 'Surya Namaskar', anim: seqAnim(SURYA), view: 'side', ground: true },
-  pushup: { label: 'Push-ups', anim: pushup, view: 'side', ground: true, arrows: [{ a: [356, 384], b: [356, 276], both: true }] },
-  dand: { label: 'Hanuman Dand', anim: DAND, view: 'side', ground: true, arrows: [{ a: [340, 384], b: [306, 296], both: true }] },
-  burpee: { label: 'Burpees', anim: BURPEE, view: 'side', ground: true, arrows: [{ a: [352, 384], b: [352, 246], both: true }] },
-  pullup: { label: 'Pull-ups', anim: pullup, view: 'front', bar: true, arrows: [{ a: [272, 176], b: [272, 96], both: true }] },
-  hang: { label: 'Dead Hang', anim: hang, view: 'front', bar: true },
-  kneeup: { label: 'Knees to Chest', anim: kneeup, view: 'side', bar: true, arrows: [{ a: [316, 300], b: [316, 214], both: true }] },
-  swing: { label: 'Jerky Swings', anim: swing, view: 'front', bar: true, arrows: [{ a: [92, 300], b: [172, 300], both: true }] },
-  hipyoga: { label: 'Hip Yoga Flow', anim: seqAnim(HIP), view: 'front', ground: true },
-  activehang: { label: 'Active Hang', anim: activehang, view: 'front', bar: true, arrows: [{ a: [266, 184], b: [266, 112], both: true }] },
-  sidestretch: { label: 'Standing Side Stretch', anim: sidestretch, view: 'front', ground: true, arrows: [{ a: [292, 196], b: [292, 120], both: true }] },
-  calfraise: { label: 'Calf Raises', anim: calfraise, view: 'front', ground: true, arrows: [{ a: [258, 306], b: [258, 222], both: true }] },
-  superman: { label: 'Superman', anim: superman, view: 'side', ground: true, arrows: [{ a: [150, 348], b: [150, 302], both: true }] },
-  bridge: { label: 'Bridge', anim: bridge, view: 'side', ground: true, arrows: [{ a: [200, 300], b: [200, 352], both: true }] },
-  squat: { label: 'Squats', anim: squat, view: 'side', ground: true, arrows: [{ a: [332, 300], b: [332, 222], both: true }] },
-  lunge: { label: 'Lunges', anim: lunge, view: 'side', ground: true, arrows: [{ a: [332, 300], b: [332, 226], both: true }] },
-  mountain: { label: 'Mountain Climbers', anim: mountain, view: 'side', ground: true },
-  wallsit: { label: 'Wall Sit', anim: wallsit, view: 'side', ground: true, wall: true, arrows: [{ a: [330, 292], b: [330, 226], both: true }] },
-  legraise: { label: 'Leg Raises', anim: legraise, view: 'side', ground: true, arrows: [{ a: [300, 300], b: [300, 226], both: true }] },
-  jj: { label: 'Jumping Jacks', anim: jj, view: 'front', ground: true, arrows: [{ a: [300, 268], b: [300, 190], both: true }] },
-  squatjump: { label: 'Squat Jumps', anim: SQUATJUMP, view: 'side', ground: true, arrows: [{ a: [350, 336], b: [350, 222], both: true }] },
-  starjump: { label: 'Star Jumps', anim: starjump, view: 'front', ground: true, arrows: [{ a: [308, 268], b: [308, 190], both: true }] },
-  box: { label: 'Shadow Boxing', anim: box, view: 'front', ground: true },
-  highknee: { label: 'High Knees', anim: highknee, view: 'side', ground: true, arrows: [{ a: [336, 300], b: [336, 226], both: true }] }
-};
-
-
-/* ================= Bajrang — app logic ================= */
+/* ================= Bajrang — app logic (illustration frames) ================= */
 const SURYA_STEPS = ['Pranamasana · Prayer', 'Hasta Uttanasana · Raised Arms', 'Hasta Padasana · Forward Fold',
   'Ashwa Sanchalanasana · Low Lunge', 'Kumbhakasana · Plank', 'Ashtanga Namaskara · Eight Limbs',
   'Bhujangasana · Cobra', 'Adho Mukha Svanasana · Downward Dog', 'Ashwa Sanchalanasana · Low Lunge',
   'Hasta Padasana · Forward Fold', 'Hasta Uttanasana · Raised Arms', 'Pranamasana · Prayer'];
-const HIP_STEPS = ['Baddha Konasana · Butterfly', 'Malasana · Deep Squat', 'Utkata Konasana · Goddess',
-  'Skandasana · Side Lunge', 'Upavistha Konasana · Wide Angle', 'Prasarita · Standing Wide'];
+const HIP_STEPS = ['Baddha Konasana · Butterfly', 'Cat-Cow · Spine', "Child's Pose · Rest",
+  'Seated Forward Fold', 'Anjaneyasana · Hip Flexor', 'Torso Twist'];
 
 const CAT = {
   skip:    { name: 'Skipping',        dev: 'रस्सी कूद',      kind: 'reps',  total: 300, rep: 0.5, how: ['Turn the rope with your wrists, not your arms', 'Hop just off the floor and land on your toes', 'Keep your elbows close to your sides'] },
@@ -650,7 +249,7 @@ const CAT = {
   pullup:  { name: 'Pull-ups',        dev: 'पुल-अप',          kind: 'reps',  total: 10,  rep: 3.2, how: ['Grip the bar, hands a little wider than your shoulders', 'Pull until your chin clears the bar', 'Lower yourself slowly, all the way down'] },
   hang:    { name: 'Dead Hang',       dev: 'डेड हैंग',        kind: 'time',  total: 120, how: ['Grip the bar and hang with straight arms', 'Let your shoulders relax and keep breathing', 'Do not swing — just hang'] },
   kneeup:  { name: 'Knees to Chest',  dev: 'घुटने से छाती',   kind: 'reps',  total: 10,  rep: 3.0, how: ['Hang from the bar with straight arms', 'Lift both knees up toward your chest', 'Lower slowly, without swinging'] },
-  swing:   { name: 'Jerky Swings',    dev: 'झूला',            kind: 'reps',  total: 10,  rep: 2.4, how: ['Hang from the bar', 'Swing your legs gently from side to side', 'Keep it small and controlled'] },
+  swing:   { name: 'Hanging Leg Raise', dev: 'लटकते पैर',     kind: 'reps',  total: 10,  rep: 3.0, how: ['Hang from the bar', 'Keep your legs straight and lift them up', 'Lower slowly, without swinging'] },
   hipyoga: { name: 'Hip Yoga Flow',   dev: 'कूल्हा योग',      kind: 'steps', rounds: 1, stepTime: 25, steps: HIP_STEPS, how: ['Ease into each pose — never force it', 'Breathe slowly into the hips', 'Hold until the tone changes'] },
 
   activehang: { name: 'Active Hang',    dev: 'सक्रिय हैंग',    kind: 'time',  total: 30, how: ['Hang from the bar with straight arms', 'Pull your shoulders DOWN, away from your ears', 'Stay long and keep breathing'] },
@@ -665,25 +264,25 @@ const CAT = {
   legraise: { name: 'Leg Raises',       dev: 'पैर उठाना',      kind: 'reps',  total: 12,  rep: 2.4, how: ['Lie on your back with your legs straight', 'Keep your lower back down and lift your legs', 'Lower slowly — do not let them drop'] },
   jj: { name: 'Jumping Jacks',          dev: 'जंपिंग जैक',     kind: 'reps',  total: 30,  rep: 1.0, how: ['Start with your feet together and arms down', 'Jump the feet out and the arms up', 'Jump back to the start'] },
   squatjump: { name: 'Squat Jumps',     dev: 'कूद बैठक',       kind: 'reps',  total: 10,  rep: 2.6, how: ['Squat down', 'Explode up and jump as high as you can', 'Land softly and go straight into the next one'] },
-  starjump: { name: 'Star Jumps',       dev: 'सितारा कूद',     kind: 'reps',  total: 15,  rep: 1.6, how: ['Stand tall with your arms by your sides', 'Jump and spread arms and legs wide like a star', 'Land soft and back to the start'] },
-  box: { name: 'Shadow Boxing',         dev: 'छाया मुक्केबाज़ी', kind: 'reps', total: 30,  rep: 0.8, how: ['Hands up near your chin', 'Punch forward, one hand at a time', 'Stay light on your feet and keep moving'] },
+  starjump: { name: 'Skater Hops',      dev: 'स्केटर कूद',     kind: 'reps',  total: 16,  rep: 1.4, how: ['Stand on one leg, knees soft', 'Hop sideways onto the other foot', 'Swing your arms and keep hopping side to side'] },
+  box: { name: 'Fast Feet',             dev: 'तेज़ क़दम',       kind: 'reps',  total: 40,  rep: 0.6, how: ['Stay light on the balls of your feet', 'Patter your feet as fast as you can', 'Keep your arms moving too'] },
   highknee: { name: 'High Knees',       dev: 'ऊँचे घुटने',     kind: 'reps',  total: 40,  rep: 0.6, how: ['Run on the spot', 'Drive each knee up to hip height', 'Pump your arms and stay quick'] }
 };
 
-const svg = (p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
-const ICON = {
-  soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9.2a3.9 3.9 0 0 1 0 5.6"/><path d="M18.1 6.5a7.3 7.3 0 0 1 0 11"/></svg>',
-  soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
-  full: svg('<path d="M12 3.2c3.6 3.4 5.5 6.2 5.5 9.1a5.5 5.5 0 0 1-11 0c0-1.6.6-2.9 1.7-4 .2 1.7 1 2.7 2 2.9-.4-2.7.2-5 1.8-8z"/>'),
-  quick: svg('<path d="M13.5 2.5 5 13.5h5.2L9.5 21.5 19 10h-5.4z"/>'),
-  upper: svg('<path d="M7 8.5v7M17 8.5v7M3.5 10.5v3M20.5 10.5v3M7 12h10"/>'),
-  surya: svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/>'),
-  hips: svg('<path d="M12 3.8c2.5 3.1 2.5 6.4 0 9.2-2.5-2.8-2.5-6.1 0-9.2z"/><path d="M3.4 12.6c1.9-2.5 4.8-3.1 7.2-1.7M20.6 12.6c-1.9-2.5-4.8-3.1-7.2-1.7"/><path d="M3.9 13c1 4.1 4.3 6.7 8.1 6.7s7.1-2.6 8.1-6.7"/>'),
-  unnati: svg('<path d="M12 20.5V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/><path d="M5.5 20.5h13"/>'),
-  balam: svg('<path d="M12 3l7 3v6.2c0 4.1-3 6.9-7 9.1-4-2.2-7-5-7-9.1V6z"/><path d="M9.2 12.2l2 2 3.6-3.8"/>'),
-  urja: svg('<path d="M12 3c3.4 3.6 5.2 6.4 5.2 9.4a5.2 5.2 0 0 1-10.4 0c0-1.6.6-2.9 1.7-4 .2 1.7 1 2.7 2 2.9-.4-2.8.2-5.2 1.5-8.3z"/>'),
-  medal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2.5 11 8.4M15.5 2.5 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="M12 12l.95 1.9 2.1.3-1.52 1.48.36 2.09L12 16.79l-1.89.98.36-2.09L8.95 14.2l2.1-.3z" fill="currentColor" stroke="none"/></svg>'
+// illustration source for each exercise (slug + optional fixed frame, or a per-step list)
+const IMG = {
+  skip: { slug: 'jump-rope' }, jog: { slug: 'running' },
+  pushup: { slug: 'push-up' }, dand: { slug: 'hindu-push-up' }, burpee: { slug: 'burpee' },
+  pullup: { slug: 'pull-up' }, hang: { slug: 'dead-hang' }, kneeup: { slug: 'hanging-knee-raise' },
+  swing: { slug: 'hanging-leg-raise' }, hipyoga: { steps: [{ s: 'butterfly-stretch' }, { s: 'cat-cow-stretch' }, { s: 'childs-pose' }, { s: 'seated-forward-fold-stretch' }, { s: 'kneeling-hip-flexor-stretch' }, { s: 'torso-twist-stretch' }] },
+  activehang: { slug: 'active-hang' }, sidestretch: { slug: 'dumbbell-side-bend' },
+  calfraise: { slug: 'standing-calf-raise' }, superman: { slug: 'superman' }, bridge: { slug: 'glute-bridge' },
+  squat: { slug: 'bodyweight-squat' }, lunge: { slug: 'forward-lunge' }, mountain: { slug: 'mountain-climber' },
+  wallsit: { slug: 'wall-sit' }, legraise: { slug: 'lying-leg-raise' }, jj: { slug: 'jumping-jack' },
+  squatjump: { slug: 'jump-squat' }, starjump: { slug: 'skater-hop' }, box: { slug: 'fast-feet' }, highknee: { slug: 'high-knees' },
+  surya: { steps: [{ s: 'toe-touch', f: 1 }, { s: 'toe-touch', f: 3 }, { s: 'toe-touch', f: 2 }, { s: 'kneeling-hip-flexor-stretch', f: 2 }, { s: 'plank', f: 1 }, { s: 'childs-pose', f: 1 }, { s: 'superman', f: 2 }, { s: 'hindu-push-up', f: 3 }, { s: 'kneeling-hip-flexor-stretch', f: 2 }, { s: 'toe-touch', f: 2 }, { s: 'toe-touch', f: 3 }, { s: 'toe-touch', f: 1 }] }
 };
+
 const ROUTINES = [
   { id: 'full',  name: 'Hanuman Full',   dev: 'पूर्ण अभ्यास', icon: 'full', desc: 'The complete Bajrang set — everything, in order.', steps: ['skip', 'jog', 'surya', 'pushup', 'dand', 'burpee', 'pullup', 'hang', 'kneeup', 'swing', 'hipyoga'] },
   { id: 'quick', name: 'Quick Power',    dev: 'तेज़ अभ्यास',   icon: 'quick', desc: 'A short burst — perfect before school.', steps: [['jog', { total: 150 }], ['skip', { total: 150 }], ['surya', { rounds: 5 }], 'pushup', 'burpee'] },
@@ -700,6 +299,8 @@ const $ = s => document.querySelector(s);
 const RING = 326.73;
 const fmt = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const parseStep = s => Array.isArray(s) ? { id: s[0], ov: s[1] || {} } : { id: s, ov: {} };
+const imgURL = (slug, n) => 'ex/' + slug + '-' + n + '.svg';
+const frameNo = t => Math.round((1 - Math.cos(2 * Math.PI * t)) / 2 * 2) + 1;   // 1,2,3,2,1
 
 /* ---------- audio ---------- */
 let audio = null, muted = localStorage.getItem('bajrang_mute') === '1';
@@ -730,7 +331,7 @@ const cue = {
 
 /* ---------- state ---------- */
 let steps = [], idx = 0, phase = 'idle', prevPhase = 'run', prepLeft = 3, elapsed = 0, last = 0, lastPrepInt = 99, lastCue = -1;
-let offsets = [], totalDur = 1, routineStart = 0, routineElapsed = 0;
+let offsets = [], totalDur = 1, routineElapsed = 0, curSrc = '';
 
 function buildRoutine(rt) {
   return rt.steps.map(s => {
@@ -744,37 +345,33 @@ function buildRoutine(rt) {
 const durOf = st => st.cat.kind === 'reps' ? st.total * st.rep : st.cat.kind === 'time' ? st.total : st.totalSteps * st.hold;
 
 /* ---------- DOM ---------- */
-const figLayer = $('#figLayer'), bgLayer = $('#bgLayer'), arrowLayer = $('#arrowLayer');
+const exImg = $('#exImg');
 const exNameEl = $('#exName'), exDevEl = $('#exDev'), stepNameEl = $('#stepName');
 const bigEl = $('#bigNum'), subEl = $('#subNum'), ringfg = $('#ringfg');
 const progbar = $('#progbar'), progL = $('#progL'), progR = $('#progR'), nextEl = $('#nextUp');
 const startBtn = $('#startPause'), playerName = $('#routineName'), statsEl = $('#stats');
 
-function setBG(st) {
-  const ex = EXERCISES[st.id];
-  if (ex.bar) {
-    bgLayer.innerHTML = ex.view === 'side'
-      ? '<circle cx="200" cy="40" r="12" fill="#5b6488"/><circle cx="200" cy="40" r="5" fill="#7f8bb0"/>'
-      : '<line x1="70" y1="40" x2="330" y2="40" stroke="#5b6488" stroke-width="11" stroke-linecap="round"/><line x1="96" y1="40" x2="96" y2="2" stroke="#5b6488" stroke-width="9"/><line x1="304" y1="40" x2="304" y2="2" stroke="#5b6488" stroke-width="9"/>';
-  } else {
-    bgLayer.innerHTML = (ex.wall ? '<line x1="170" y1="130" x2="170" y2="404" stroke="rgba(255,255,255,.18)" stroke-width="6" stroke-linecap="round"/>' : '') +
-      '<ellipse cx="200" cy="404" rx="120" ry="13" fill="rgba(242,169,59,.08)"/><line x1="24" y1="406" x2="376" y2="406" stroke="rgba(255,255,255,.13)" stroke-width="3" stroke-linecap="round"/>';
-  }
-  arrowLayer.innerHTML = arrowsSVG(ex.arrows);
-}
-
 function animT(st) {
   if (phase === 'prep' || phase === 'idle') return 0;
   if (st.cat.kind === 'reps') return (elapsed % st.rep) / st.rep;
   if (st.cat.kind === 'time') return (elapsed % 2) / 2;
-  return elapsed / (st.n * st.hold);
+  return (elapsed % st.hold) / st.hold;
+}
+function srcFor(st, tt) {
+  const ex = IMG[st.id];
+  if (ex.steps) {
+    const si = (phase === 'run' ? Math.floor(elapsed / st.hold) : 0) % ex.steps.length;
+    const sp = ex.steps[si];
+    return imgURL(sp.s, sp.f || frameNo(tt));
+  }
+  return imgURL(ex.slug, frameNo(tt));
 }
 
 function render() {
   const st = steps[idx];
   const tt = animT(st);
-  const exDef = EXERCISES[st.id];
-  figLayer.innerHTML = monkeySVG(exDef.anim(tt), { t: tt, view: exDef.view });
+  const src = srcFor(st, tt);
+  if (src !== curSrc) { curSrc = src; exImg.src = src; }
   exNameEl.textContent = st.cat.name;
   exDevEl.textContent = st.cat.dev || '';
   let big = '', sub = '', frac = 0, line = '', rline = '';
@@ -815,17 +412,17 @@ function render() {
 
 /* ---------- flow ---------- */
 function openRoutine(rt) {
-  steps = buildRoutine(rt); idx = 0; phase = 'idle'; prepLeft = steps[0].prep; elapsed = 0;
+  steps = buildRoutine(rt); idx = 0; phase = 'idle'; prepLeft = steps[0].prep; elapsed = 0; curSrc = '';
   offsets = []; totalDur = 0;
   steps.forEach(st => { offsets.push(totalDur); totalDur += st.prep + durOf(st); });
   routineElapsed = 0;
   playerName.textContent = rt.name;
-  setBG(steps[0]); render();
+  render();
   $('#home').classList.remove('on'); $('#done').classList.remove('on'); $('#player').classList.add('on');
 }
 function beginStep(i) {
-  idx = i; phase = 'prep'; prepLeft = steps[i].prep; elapsed = 0; lastPrepInt = 99; lastCue = -1;
-  setBG(steps[i]); render();
+  idx = i; phase = 'prep'; prepLeft = steps[i].prep; elapsed = 0; lastPrepInt = 99; lastCue = -1; curSrc = '';
+  render();
 }
 function doneStep() {
   cue.done();
@@ -869,6 +466,22 @@ function tick(now) {
   }
 }
 
+/* ---------- icons ---------- */
+const svg = (p) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+const ICON = {
+  soundOn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M15.5 9.2a3.9 3.9 0 0 1 0 5.6"/><path d="M18.1 6.5a7.3 7.3 0 0 1 0 11"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3l4-3.2v11.4L7 14.5H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+  full: svg('<path d="M12 3.2c3.6 3.4 5.5 6.2 5.5 9.1a5.5 5.5 0 0 1-11 0c0-1.6.6-2.9 1.7-4 .2 1.7 1 2.7 2 2.9-.4-2.7.2-5 1.8-8z"/>'),
+  quick: svg('<path d="M13.5 2.5 5 13.5h5.2L9.5 21.5 19 10h-5.4z"/>'),
+  upper: svg('<path d="M7 8.5v7M17 8.5v7M3.5 10.5v3M20.5 10.5v3M7 12h10"/>'),
+  surya: svg('<circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.3M12 19.3v2.3M2.4 12h2.3M19.3 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/>'),
+  hips: svg('<path d="M12 3.8c2.5 3.1 2.5 6.4 0 9.2-2.5-2.8-2.5-6.1 0-9.2z"/><path d="M3.4 12.6c1.9-2.5 4.8-3.1 7.2-1.7M20.6 12.6c-1.9-2.5-4.8-3.1-7.2-1.7"/><path d="M3.9 13c1 4.1 4.3 6.7 8.1 6.7s7.1-2.6 8.1-6.7"/>'),
+  unnati: svg('<path d="M12 20.5V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/><path d="M5.5 20.5h13"/>'),
+  balam: svg('<path d="M12 3l7 3v6.2c0 4.1-3 6.9-7 9.1-4-2.2-7-5-7-9.1V6z"/><path d="M9.2 12.2l2 2 3.6-3.8"/>'),
+  urja: svg('<path d="M12 3c3.4 3.6 5.2 6.4 5.2 9.4a5.2 5.2 0 0 1-10.4 0c0-1.6.6-2.9 1.7-4 .2 1.7 1 2.7 2 2.9-.4-2.8.2-5.2 1.5-8.3z"/>'),
+  medal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2.5 11 8.4M15.5 2.5 13 8.4"/><circle cx="12" cy="15" r="6"/><path d="M12 12l.95 1.9 2.1.3-1.52 1.48.36 2.09L12 16.79l-1.89.98.36-2.09L8.95 14.2l2.1-.3z" fill="currentColor" stroke="none"/></svg>'
+};
+
 /* ---------- wiring ---------- */
 $('#routines').innerHTML = ROUTINES.map((rt, i) => {
   const built = buildRoutine(rt);
@@ -901,7 +514,16 @@ function paintMute() { muteBtn.innerHTML = muted ? ICON.soundOff : ICON.soundOn;
 muteBtn.addEventListener('click', () => { muted = !muted; localStorage.setItem('bajrang_mute', muted ? '1' : '0'); paintMute(); if (!muted) { initAudio(); cue.step(); } });
 paintMute();
 $('#medalIcon').innerHTML = ICON.medal;
-$('#heroPose').innerHTML = '<svg viewBox="88 177 224 236" xmlns="http://www.w3.org/2000/svg">' + monkeySVG(HIP[2], { t: 0.3, view: 'front' }) + '</svg>';
+
+// preload every illustration so the flip-book never flickers
+(function preload() {
+  const srcs = new Set();
+  Object.values(IMG).forEach(ex => {
+    if (ex.steps) ex.steps.forEach(sp => { for (let n = 1; n <= 3; n++) srcs.add(imgURL(sp.s, n)); });
+    else for (let n = 1; n <= 3; n++) srcs.add(imgURL(ex.slug, n));
+  });
+  srcs.forEach(s => { const i = new Image(); i.src = s; });
+})();
 
 document.addEventListener('pointerdown', initAudio, { once: true });
 document.addEventListener('visibilitychange', () => { if (document.hidden && (phase === 'run' || phase === 'prep')) { prevPhase = phase; phase = 'paused'; } });
